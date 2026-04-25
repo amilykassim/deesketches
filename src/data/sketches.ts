@@ -28,14 +28,12 @@ export type Sketch = {
 };
 
 export const sketches: Sketch[] = [
-  // To swap in your actual card photos: drop them into /public/sketches/
-  // with these filenames, then uncomment the matching `image:` line.
   {
     id: "best-tea",
     title: "Best-tea",
     pun: "for your number-one bestie.",
     Component: BestTea,
-    // image: "/sketches/best-tea.jpg",
+    image: "/sketches/best-tea.jpg",
     price: 12,
     category: "Birthday",
     accent: "#FF8A3C",
@@ -45,7 +43,7 @@ export const sketches: Sketch[] = [
     title: "Happy Birthday Girl",
     pun: "long-distance? heart-string-close.",
     Component: PhoneCallDuo,
-    // image: "/sketches/happy-birthday-girl.jpg",
+    image: "/sketches/happy-birthday-girl.jpg",
     price: 12,
     category: "Friendship",
     accent: "#FF4D8D",
@@ -55,7 +53,7 @@ export const sketches: Sketch[] = [
     title: "Egg-stra Happy",
     pun: "you make my life egg-stra.",
     Component: EggstraHappy,
-    // image: "/sketches/eggstra-happy.jpg",
+    image: "/sketches/eggstra-happy.jpg",
     price: 12,
     category: "Love",
     accent: "#4A90E2",
@@ -65,7 +63,7 @@ export const sketches: Sketch[] = [
     title: "I Got Your Back",
     pun: "literally, see?",
     Component: GotYourBack,
-    // image: "/sketches/got-your-back.jpg",
+    image: "/sketches/got-your-back.jpg",
     price: 12,
     category: "Friendship",
     accent: "#FF4D8D",

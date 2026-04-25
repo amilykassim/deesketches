@@ -30,7 +30,7 @@ export function Testimonials() {
           ~ kind words ~
         </p>
         <h2 className="font-display text-5xl md:text-6xl text-ink">
-          people say <span className="text-sketchPink">nice things</span>.
+          People say <span className="text-sketchPink">nice things</span>.
         </h2>
       </div>
 

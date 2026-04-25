@@ -8,6 +8,7 @@ import { Testimonials } from "./components/Testimonials";
 import { Contact } from "./components/Contact";
 import { Footer } from "./components/Footer";
 import { ContactModal } from "./components/ContactModal";
+import { DrawnSquiggle } from "./components/DrawnSquiggle";
 import type { Sketch } from "./data/sketches";
 
 function App() {
@@ -29,10 +30,14 @@ function App() {
 
       <main className="relative z-20">
         <Hero onBrowse={browse} onCommission={() => openWith(null)} />
+        <DrawnSquiggle color="#FF4D8D" seed={0} className="max-w-4xl mx-auto" />
         <Story />
+        <DrawnSquiggle color="#FF8A3C" seed={1} className="max-w-4xl mx-auto" />
         <Gallery onPick={(s) => openWith(s)} />
         <HowItWorks />
+        <DrawnSquiggle color="#4A90E2" seed={2} className="max-w-4xl mx-auto" />
         <Testimonials />
+        <DrawnSquiggle color="#F6C667" seed={3} className="max-w-4xl mx-auto" />
         <Contact />
       </main>
 

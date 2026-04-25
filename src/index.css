@@ -20,6 +20,16 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M3 25 L8 23 L23 8 L20 5 L5 20 Z' fill='%23F6C667' stroke='%231a1a1a' stroke-width='1.5' stroke-linejoin='round'/><path d='M5 20 L8 23' stroke='%231a1a1a' stroke-width='1.5'/></svg>")
+      4 24,
+    auto;
+}
+
+/* Keep system cursors where they help: typing, text selection */
+input,
+textarea {
+  cursor: text;
 }
 
 html {

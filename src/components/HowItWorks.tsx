@@ -5,20 +5,20 @@ import { Doodle } from "./Doodle";
 const steps = [
   {
     n: "01",
-    title: "pick or describe",
+    title: "Pick or describe",
     body: "browse the gallery — or tell me a story, a name, an inside joke.",
     accent: "#FF4D8D",
   },
   {
     n: "02",
-    title: "i draw it by hand",
+    title: "I draw it by hand",
     body: "no printers, no shortcuts. just markers, a wobbly desk, and tea.",
     accent: "#F6C667",
   },
   {
     n: "03",
-    title: "ships in a doodled envelope",
-    body: "tracked worldwide. arrives in 5–10 days, hand-decorated end-to-end.",
+    title: "Ships in a doodled envelope",
+    body: "tracked worldwide. arrives in 1 hour, hand-decorated end-to-end.",
     accent: "#4A90E2",
   },
 ];
@@ -35,7 +35,7 @@ export function HowItWorks() {
             ~ how it works ~
           </p>
           <h2 className="font-display text-5xl md:text-6xl text-ink leading-tight">
-            three steps. <span className="text-sketchPink">no robots.</span>
+            Three steps. <span className="text-sketchPink">no robots.</span>
           </h2>
         </div>
 

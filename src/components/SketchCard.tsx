@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { RoughBox } from "./RoughBox";
 import { Doodle } from "./Doodle";
+import { InkReveal } from "./InkReveal";
 import type { Sketch } from "../data/sketches";
 
 type Props = {
@@ -46,19 +47,25 @@ export function SketchCard({ sketch, onPick, index }: Props) {
         strokeWidth={1.6}
       />
 
-      {/* artwork */}
+      {/* artwork — InkReveal wipes it in via clip-path on first scroll into view */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-paper">
-        {sketch.image ? (
-          <img
-            src={sketch.image}
-            alt={sketch.title}
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
-        ) : Inner ? (
-          <Inner />
-        ) : null}
+        <InkReveal
+          direction={index % 2 === 0 ? "left" : "up"}
+          delay={(index % 6) * 80}
+          className="h-full w-full"
+        >
+          {sketch.image ? (
+            <img
+              src={sketch.image}
+              alt={sketch.title}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-contain"
+            />
+          ) : Inner ? (
+            <Inner />
+          ) : null}
+        </InkReveal>
 
         {/* corner doodles appear on hover */}
         <div

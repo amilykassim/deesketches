@@ -50,8 +50,8 @@ export function Story() {
             ~ the story ~
           </p>
           <h2 className="font-display text-5xl md:text-6xl text-ink leading-tight mb-6">
-            i started drawing for{" "}
-            <span className="text-sketchPink">my best friend's</span> birthday.
+            I started drawing for{" "}
+            <span className="text-sketchPink">my husband's</span> birthday.
           </h2>
           <p className="font-hand text-xl text-ink/85 leading-relaxed mb-4">
             then her sister wanted one. then her sister's coworker. then a stranger

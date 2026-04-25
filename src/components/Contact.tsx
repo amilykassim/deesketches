@@ -4,7 +4,7 @@ import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
 import { Doodle } from "./Doodle";
 
-const EMAIL = "hello@littlenotes.studio";
+const EMAIL = "hello@deesketches.studio";
 
 export function Contact() {
   const [name, setName] = useState("");
@@ -15,7 +15,7 @@ export function Contact() {
     e.preventDefault();
     const subject = encodeURIComponent(`sketch idea from ${name || "a stranger"}`);
     const body = encodeURIComponent(
-      `hi! i'd love a sketch.\n\nname: ${name}\nemail: ${email}\n\nidea:\n${idea}\n\n— sent from littlenotes.studio`
+      `hi! i'd love a sketch.\n\nname: ${name}\nemail: ${email}\n\nidea:\n${idea}\n\n— sent from deesketches.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };
@@ -27,14 +27,14 @@ export function Contact() {
 
       <div className="max-w-3xl mx-auto text-center mb-12">
         <p className="font-ui uppercase tracking-[0.25em] text-xs text-ink/50 mb-3">
-          ~ commission a sketch ~
+          ~ Got an idea? let's do it ~
         </p>
         <h2 className="font-display text-5xl md:text-6xl text-ink leading-tight mb-4">
-          tell me <span className="text-sketchPink">about them</span>.
+          Tell me <span className="text-sketchPink">about them</span>.
         </h2>
         <p className="font-hand text-lg text-ink/75">
-          a name, a moment, a pun you can't stop thinking about. i'll sketch back
-          within 48 hours.
+          A name, a moment, a pun you can't stop thinking about. i'll sketch back
+          within 1 hour.
         </p>
       </div>
 

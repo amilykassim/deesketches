@@ -1,9 +1,17 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { Doodle } from "./Doodle";
 import { RoughBox } from "./RoughBox";
-import { RoughUnderline } from "./RoughUnderline";
-import { BestTea } from "../sketches/BestTea";
+import { MagneticButton } from "./MagneticButton";
+import { ConfettiBurst } from "./ConfettiBurst";
 
 type Props = {
   onBrowse: () => void;
@@ -11,6 +19,51 @@ type Props = {
 };
 
 const headline = ["Tiny", "sketches,", "big", "feelings."];
+
+/** Subtle pointer-tracked parallax. Returns smoothed motion values in [-1, 1]. */
+function usePointerParallax() {
+  const reduce = useReducedMotion();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { damping: 30, stiffness: 80, mass: 0.6 });
+  const sy = useSpring(y, { damping: 30, stiffness: 80, mass: 0.6 });
+
+  useEffect(() => {
+    if (reduce) return;
+    const onMove = (e: PointerEvent) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      x.set((e.clientX - cx) / cx);
+      y.set((e.clientY - cy) / cy);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [reduce, x, y]);
+
+  return { x: sx, y: sy };
+}
+
+function ParallaxDoodle({
+  px,
+  py,
+  amp,
+  ...rest
+}: {
+  px: MotionValue<number>;
+  py: MotionValue<number>;
+  amp: number;
+} & Omit<Parameters<typeof Doodle>[0], "drift">) {
+  const tx = useTransform(px, (v) => v * amp);
+  const ty = useTransform(py, (v) => v * amp);
+  return (
+    <motion.span
+      className={rest.className}
+      style={{ x: tx, y: ty, willChange: "transform" }}
+    >
+      <Doodle {...rest} className="" drift={rest.size ? 6 : 5} />
+    </motion.span>
+  );
+}
 
 export function Hero({ onBrowse, onCommission }: Props) {
   const ref = useRef<HTMLElement>(null);
@@ -20,26 +73,33 @@ export function Hero({ onBrowse, onCommission }: Props) {
   });
   const yArt = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const rotArt = useTransform(scrollYProgress, [0, 1], [-4, 6]);
+  const headlineOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.4]);
+
+  const { x: px, y: py } = usePointerParallax();
+  const [confetti, setConfetti] = useState(0);
 
   return (
     <section
       ref={ref}
       id="top"
-      className="relative isolate min-h-[100svh] flex items-center pt-24 pb-12 px-5"
+      className="relative isolate min-h-[100svh] flex items-center pt-24 pb-12 px-5 overflow-hidden"
     >
-      {/* floating doodles */}
-      <Doodle kind="heart" color="#FF4D8D" size={28} drift={6} className="absolute top-32 left-[8%] z-10" rotate={-10} />
-      <Doodle kind="star"  color="#F6C667" size={32} drift={7} className="absolute top-44 right-[12%] z-10" rotate={15} />
-      <Doodle kind="swirl" color="#4A90E2" size={36} drift={8} className="absolute bottom-32 left-[15%] z-10" rotate={20} />
-      <Doodle kind="squiggle" color="#FF8A3C" size={42} drift={5} className="absolute top-1/2 right-[6%] z-10" rotate={-8} />
-      <Doodle kind="spark" color="#FF4D8D" size={26} drift={6.5} className="absolute bottom-20 right-[28%] z-10" rotate={0} />
-      <Doodle kind="dot" color="#1a1a1a" size={14} drift={4} className="absolute top-36 left-[42%] z-10" />
-      <Doodle kind="tea" color="#1a1a1a" size={32} drift={9} className="absolute top-1/3 left-[3%] z-10" rotate={-15} />
-      <Doodle kind="egg" color="#1a1a1a" size={30} drift={10} className="absolute bottom-40 right-[3%] z-10" rotate={12} />
+      {/* parallax doodles — pointer-tracked + drifting */}
+      <ParallaxDoodle px={px} py={py} amp={28} kind="heart"    color="#FF4D8D" size={28} className="absolute top-32 left-[8%] z-10"   rotate={-10} />
+      <ParallaxDoodle px={px} py={py} amp={36} kind="star"     color="#F6C667" size={32} className="absolute top-44 right-[12%] z-10" rotate={15}  />
+      <ParallaxDoodle px={px} py={py} amp={22} kind="swirl"    color="#4A90E2" size={36} className="absolute bottom-32 left-[15%] z-10" rotate={20} />
+      <ParallaxDoodle px={px} py={py} amp={42} kind="squiggle" color="#FF8A3C" size={42} className="absolute top-1/2 right-[6%] z-10"  rotate={-8} />
+      <ParallaxDoodle px={px} py={py} amp={20} kind="spark"    color="#FF4D8D" size={26} className="absolute bottom-20 right-[28%] z-10" />
+      <ParallaxDoodle px={px} py={py} amp={14} kind="dot"      color="#1a1a1a" size={14} className="absolute top-36 left-[42%] z-10" />
+      <ParallaxDoodle px={px} py={py} amp={32} kind="tea"      color="#1a1a1a" size={32} className="absolute top-1/3 left-[3%] z-10"  rotate={-15} />
+      <ParallaxDoodle px={px} py={py} amp={32} kind="egg"      color="#1a1a1a" size={30} className="absolute bottom-40 right-[3%] z-10" rotate={12} />
 
       <div className="relative z-20 max-w-6xl mx-auto grid lg:grid-cols-12 gap-10 items-center w-full">
         {/* Headline + CTAs */}
-        <div className="lg:col-span-7 text-center lg:text-left">
+        <motion.div
+          className="lg:col-span-7 text-center lg:text-left"
+          style={{ opacity: headlineOpacity }}
+        >
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -53,10 +113,10 @@ export function Hero({ onBrowse, onCommission }: Props) {
             {headline.map((word, i) => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 30, rotate: i % 2 === 0 ? -3 : 3 }}
-                animate={{ opacity: 1, y: 0, rotate: i % 2 === 0 ? -1.5 : 1.5 }}
+                initial={{ opacity: 0, y: 30, rotate: i % 2 === 0 ? -3 : 3, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, rotate: i % 2 === 0 ? -1.5 : 1.5, filter: "blur(0px)" }}
                 transition={{
-                  duration: 0.55,
+                  duration: 0.7,
                   delay: 0.2 + i * 0.18,
                   ease: [0.2, 0.8, 0.2, 1],
                 }}
@@ -67,6 +127,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
                     ? "text-ink"
                     : ""
                 }`}
+                style={{ willChange: "transform, filter, opacity" }}
               >
                 {word}
               </motion.span>
@@ -91,22 +152,33 @@ export function Hero({ onBrowse, onCommission }: Props) {
             transition={{ duration: 0.55, delay: 1.25 }}
             className="flex flex-wrap gap-4 justify-center lg:justify-start"
           >
-            <button
-              type="button"
-              onClick={onBrowse}
-              className="relative px-7 py-3.5 font-ui text-lg text-ink bg-sketchYellow pencil-cursor"
-            >
-              <RoughBox seed={11} strokeColor="#1a1a1a" strokeWidth={2} roughness={2} />
-              <span className="relative">browse the gallery →</span>
-            </button>
-            <button
-              type="button"
-              onClick={onCommission}
-              className="relative px-7 py-3.5 font-ui text-lg text-paper bg-ink pencil-cursor"
-            >
-              <RoughBox seed={4} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
-              <span className="relative">commission a sketch</span>
-            </button>
+            <MagneticButton>
+              <button
+                type="button"
+                onClick={onBrowse}
+                className="relative px-7 py-3.5 font-ui text-lg text-ink bg-sketchYellow pencil-cursor transition-shadow hover:shadow-[6px_8px_0_rgba(26,26,26,0.18)]"
+              >
+                <RoughBox seed={11} strokeColor="#1a1a1a" strokeWidth={2} roughness={2} />
+                <span className="relative">browse the gallery →</span>
+              </button>
+            </MagneticButton>
+
+            <MagneticButton>
+              <div className="relative">
+                <ConfettiBurst trigger={confetti} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfetti((c) => c + 1);
+                    onCommission();
+                  }}
+                  className="relative px-7 py-3.5 font-ui text-lg text-paper bg-ink pencil-cursor transition-shadow hover:shadow-[6px_8px_0_rgba(255,77,141,0.35)]"
+                >
+                  <RoughBox seed={4} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
+                  <span className="relative">Got an idea? let's do it!</span>
+                </button>
+              </div>
+            </MagneticButton>
           </motion.div>
 
           <motion.div
@@ -117,8 +189,16 @@ export function Hero({ onBrowse, onCommission }: Props) {
           >
             <div className="flex -space-x-2">
               {["#FF4D8D", "#FF8A3C", "#4A90E2", "#F6C667"].map((c, i) => (
-                <span
+                <motion.span
                   key={i}
+                  initial={{ scale: 0, rotate: -30 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{
+                    delay: 1.5 + i * 0.08,
+                    type: "spring",
+                    damping: 12,
+                    stiffness: 220,
+                  }}
                   className="inline-block w-8 h-8 rounded-full border-2 border-paper"
                   style={{ background: c }}
                 />
@@ -128,7 +208,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
               loved by 800+ humans worldwide
             </span>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Featured artwork */}
         <motion.div
@@ -139,12 +219,19 @@ export function Hero({ onBrowse, onCommission }: Props) {
             initial={{ opacity: 0, scale: 0.9, rotate: -8 }}
             animate={{ opacity: 1, scale: 1, rotate: -3 }}
             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            whileHover={{ rotate: -1, scale: 1.02 }}
             className="relative mx-auto max-w-md p-3 bg-paper"
             style={{ boxShadow: "12px 14px 0 rgba(26,26,26,0.12)" }}
           >
             <RoughBox seed={9} strokeColor="#1a1a1a" strokeWidth={2} roughness={1.6} />
-            <div className="relative aspect-[4/3]">
-              <BestTea />
+            <div className="relative aspect-[3/4] overflow-hidden">
+              <img
+                src="/sketches/best-tea.jpg"
+                alt="Best-tea — hand-drawn birthday card"
+                fetchPriority="high"
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="relative mt-2 px-2 flex justify-between items-baseline">
               <span className="font-display text-2xl">Best-tea</span>

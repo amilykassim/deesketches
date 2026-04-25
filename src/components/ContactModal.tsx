@@ -4,7 +4,7 @@ import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
 import type { Sketch } from "../data/sketches";
 
-const EMAIL = "hello@littlenotes.studio";
+const EMAIL = "hello@deesketches.studio";
 
 type Props = {
   open: boolean;
@@ -32,7 +32,7 @@ export function ContactModal({ open, sketch, onClose }: Props) {
     const title = sketch ? sketch.title : "a custom sketch";
     const subject = encodeURIComponent(`sketch inquiry: ${title}`);
     const body = encodeURIComponent(
-      `hi! i'd like to order/commission "${title}".\n\nname: ${name}\nemail: ${email}\n\nnote:\n${note}\n\n— sent from littlenotes.studio`
+      `hi! i'd like to order "${title}".\n\nname: ${name}\nemail: ${email}\n\nnote:\n${note}\n\n— sent from deesketches.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };
@@ -77,7 +77,7 @@ export function ContactModal({ open, sketch, onClose }: Props) {
                 inquiry
               </p>
               <h3 className="font-display text-3xl text-ink leading-tight mb-1">
-                {sketch ? sketch.title : "commission a sketch"}
+                {sketch ? sketch.title : "Got an idea? let's do it!"}
               </h3>
               <div className="w-32"><RoughUnderline color="#FF4D8D" /></div>
               <p className="font-hand text-base text-ink/75 mt-3">

@@ -32,10 +32,10 @@ export function Gallery({ onPick }: Props) {
             transition={{ duration: 0.6 }}
             className="font-display text-5xl md:text-6xl text-ink mb-4"
           >
-            pick your <span className="text-sketchPink">favourite feeling</span>.
+            Pick your <span className="text-sketchPink">favourite feeling</span>.
           </motion.h2>
           <p className="font-hand text-lg text-ink/70 max-w-xl mx-auto">
-            every sketch is one-of-a-kind. order the original or a hand-finished print.
+            Every sketch is one-of-a-kind. order the original or a hand-finished print.
           </p>
         </div>
 
