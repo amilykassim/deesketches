@@ -3,21 +3,21 @@ import { RoughBox } from "./RoughBox";
 
 const quotes = [
   {
-    text: "i cried. like, full crying. my best friend made hers her phone wallpaper.",
-    name: "priya",
-    where: "london",
+    text: "I cried. Like, full crying. My best friend made hers her phone wallpaper.",
+    name: "Priya",
+    where: "London",
     color: "#FF4D8D",
   },
   {
-    text: "got the egg-stra one for my partner. now we say it instead of i love you. send help.",
-    name: "marco",
-    where: "milan",
+    text: "Got the egg-stra one for my partner. Now we say it instead of I love you. Send help.",
+    name: "Marco",
+    where: "Milan",
     color: "#4A90E2",
   },
   {
-    text: "actual hand-drawn? in 2025? i didn't know i needed this until it arrived.",
-    name: "sade",
-    where: "lagos",
+    text: "Actual hand-drawn? In 2025? I didn't know I needed this until it arrived.",
+    name: "Sade",
+    where: "Lagos",
     color: "#F6C667",
   },
 ];
@@ -27,7 +27,7 @@ export function Testimonials() {
     <section className="py-28 px-5 max-w-6xl mx-auto">
       <div className="text-center mb-14">
         <p className="font-ui uppercase tracking-[0.25em] text-xs text-ink/50 mb-3">
-          ~ kind words ~
+          ~ Kind words ~
         </p>
         <h2 className="font-display text-5xl md:text-6xl text-ink">
           People say <span className="text-sketchPink">nice things</span>.

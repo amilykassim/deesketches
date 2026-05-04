@@ -31,16 +31,16 @@ export function Navbar({ onCommission }: Props) {
         </a>
         <div className="hidden sm:flex items-center gap-7 font-ui text-ink/85">
           <a href="#story" className="hover:text-sketchPink transition-colors">
-            story
+            Story
           </a>
           <a href="#gallery" className="hover:text-sketchPink transition-colors">
-            gallery
+            Gallery
           </a>
           <a href="#how" className="hover:text-sketchPink transition-colors">
-            how
+            How
           </a>
           <a href="#contact" className="hover:text-sketchPink transition-colors">
-            contact
+            Contact
           </a>
         </div>
         <button

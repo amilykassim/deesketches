@@ -49,7 +49,7 @@ export function Footer() {
         </div>
 
         <p className="font-ui text-xs text-ink/55 text-center md:text-right flex items-center gap-2">
-          made with
+          Made with
           <Doodle kind="heart" color="#FF4D8D" size={16} />
           and a wobbly hand
           <span className="opacity-60">· © {new Date().getFullYear()}</span>

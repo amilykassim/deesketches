@@ -54,28 +54,28 @@ export function Story() {
             <span className="text-sketchPink">my husband's</span> birthday.
           </h2>
           <p className="font-hand text-xl text-ink/85 leading-relaxed mb-4">
-            then her sister wanted one. then her sister's coworker. then a stranger
+            Then her sister wanted one. Then her sister's coworker. Then a stranger
             on the internet.
           </p>
           <p className="font-hand text-xl text-ink/85 leading-relaxed">
-            now i draw <span className="ink-underline">tiny silly sketches</span>{" "}
+            Now I draw <span className="ink-underline">tiny silly sketches</span>{" "}
             full-time — the kind of cards that feel like a hug, not a transaction.
-            every piece is hand-drawn on cotton paper, signed, and shipped in a
+            Every piece is hand-drawn on cotton paper, signed, and shipped in a
             doodled envelope.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-6 font-ui text-ink/70">
             <div>
               <div className="font-display text-4xl text-ink">800+</div>
-              <div className="text-xs uppercase tracking-wider">cards mailed</div>
+              <div className="text-xs uppercase tracking-wider">Cards mailed</div>
             </div>
             <div>
               <div className="font-display text-4xl text-ink">42</div>
-              <div className="text-xs uppercase tracking-wider">countries</div>
+              <div className="text-xs uppercase tracking-wider">Countries</div>
             </div>
             <div>
               <div className="font-display text-4xl text-ink">∞</div>
-              <div className="text-xs uppercase tracking-wider">cups of tea</div>
+              <div className="text-xs uppercase tracking-wider">Cups of tea</div>
             </div>
           </div>
         </motion.div>

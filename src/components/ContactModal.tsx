@@ -30,9 +30,9 @@ export function ContactModal({ open, sketch, onClose }: Props) {
   const send = (e: React.FormEvent) => {
     e.preventDefault();
     const title = sketch ? sketch.title : "a custom sketch";
-    const subject = encodeURIComponent(`sketch inquiry: ${title}`);
+    const subject = encodeURIComponent(`Sketch inquiry: ${title}`);
     const body = encodeURIComponent(
-      `hi! i'd like to order "${title}".\n\nname: ${name}\nemail: ${email}\n\nnote:\n${note}\n\n— sent from deesketches.studio`
+      `Hi! I'd like to order "${title}".\n\nName: ${name}\nEmail: ${email}\n\nNote:\n${note}\n\n— Sent from deesketches.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };
@@ -74,33 +74,33 @@ export function ContactModal({ open, sketch, onClose }: Props) {
 
             <div className="relative">
               <p className="font-ui uppercase tracking-[0.2em] text-[10px] text-ink/50 mb-1">
-                inquiry
+                Inquiry
               </p>
               <h3 className="font-display text-3xl text-ink leading-tight mb-1">
-                {sketch ? sketch.title : "Got an idea? let's do it!"}
+                {sketch ? sketch.title : "Got an idea? Let's do it!"}
               </h3>
               <div className="w-32"><RoughUnderline color="#FF4D8D" /></div>
               <p className="font-hand text-base text-ink/75 mt-3">
-                drop your details and a note. i'll reply by email within 48 hours
+                Drop your details and a note. I'll reply by email within 48 hours
                 with availability and pricing.
               </p>
 
               <form onSubmit={send} className="mt-6 grid gap-5">
                 <ModalField
-                  label="name"
+                  label="Name"
                   value={name}
                   onChange={setName}
                   required
                 />
                 <ModalField
-                  label="email"
+                  label="Email"
                   type="email"
                   value={email}
                   onChange={setEmail}
                   required
                 />
                 <ModalField
-                  label="note (optional)"
+                  label="Note (optional)"
                   value={note}
                   onChange={setNote}
                   multiline
@@ -110,7 +110,7 @@ export function ContactModal({ open, sketch, onClose }: Props) {
                   className="relative mt-2 px-6 py-3 font-ui text-base text-paper bg-ink pencil-cursor"
                 >
                   <RoughBox seed={45} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
-                  <span className="relative">send via email →</span>
+                  <span className="relative">Send via email →</span>
                 </button>
               </form>
             </div>

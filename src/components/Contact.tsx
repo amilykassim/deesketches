@@ -13,9 +13,9 @@ export function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`sketch idea from ${name || "a stranger"}`);
+    const subject = encodeURIComponent(`Sketch idea from ${name || "a stranger"}`);
     const body = encodeURIComponent(
-      `hi! i'd love a sketch.\n\nname: ${name}\nemail: ${email}\n\nidea:\n${idea}\n\n— sent from deesketches.studio`
+      `Hi! I'd love a sketch.\n\nName: ${name}\nEmail: ${email}\n\nIdea:\n${idea}\n\n— Sent from deesketches.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };
@@ -27,13 +27,13 @@ export function Contact() {
 
       <div className="max-w-3xl mx-auto text-center mb-12">
         <p className="font-ui uppercase tracking-[0.25em] text-xs text-ink/50 mb-3">
-          ~ Got an idea? let's do it ~
+          ~ Got an idea? Let's do it ~
         </p>
         <h2 className="font-display text-5xl md:text-6xl text-ink leading-tight mb-4">
           Tell me <span className="text-sketchPink">about them</span>.
         </h2>
         <p className="font-hand text-lg text-ink/75">
-          A name, a moment, a pun you can't stop thinking about. i'll sketch back
+          A name, a moment, a pun you can't stop thinking about. I'll sketch back
           within 1 hour.
         </p>
       </div>
@@ -51,24 +51,24 @@ export function Contact() {
 
         <div className="relative grid gap-6">
           <Field
-            label="your name"
+            label="Your name"
             value={name}
             onChange={setName}
-            placeholder="e.g. priya"
+            placeholder="e.g. Priya"
           />
           <Field
-            label="your email"
+            label="Your email"
             value={email}
             onChange={setEmail}
             type="email"
             placeholder="hello@example.com"
           />
           <Field
-            label="the sketch idea"
+            label="The sketch idea"
             value={idea}
             onChange={setIdea}
             multiline
-            placeholder="my friend turns 30. she loves cats and bad puns. send help."
+            placeholder="My friend turns 30. She loves cats and bad puns. Send help."
           />
 
           <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
@@ -77,13 +77,13 @@ export function Contact() {
               className="relative px-7 py-3.5 font-ui text-lg text-paper bg-ink pencil-cursor"
             >
               <RoughBox seed={91} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
-              <span className="relative">send the idea →</span>
+              <span className="relative">Send the idea →</span>
             </button>
             <a
               href={`mailto:${EMAIL}`}
               className="font-hand text-ink/70 hover:text-sketchPink transition-colors"
             >
-              or email me directly · {EMAIL}
+              Or email me directly · {EMAIL}
             </a>
           </div>
         </div>

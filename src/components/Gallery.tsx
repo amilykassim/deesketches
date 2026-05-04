@@ -23,7 +23,7 @@ export function Gallery({ onPick }: Props) {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <p className="font-ui uppercase tracking-[0.25em] text-xs text-ink/50 mb-3">
-            ~ the gallery ~
+            ~ The gallery ~
           </p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -35,7 +35,7 @@ export function Gallery({ onPick }: Props) {
             Pick your <span className="text-sketchPink">favourite feeling</span>.
           </motion.h2>
           <p className="font-hand text-lg text-ink/70 max-w-xl mx-auto">
-            Every sketch is one-of-a-kind. order the original or a hand-finished print.
+            Every sketch is one-of-a-kind. Order the original or a hand-finished print.
           </p>
         </div>
 

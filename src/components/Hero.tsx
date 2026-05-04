@@ -106,7 +106,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             transition={{ duration: 0.5 }}
             className="font-ui text-ink/60 tracking-[0.2em] uppercase text-xs mb-5"
           >
-            * hand-drawn · made one at a time *
+            * Hand-drawn · made one at a time *
           </motion.p>
 
           <h1 className="font-display text-ink leading-[0.92] text-[clamp(3.2rem,9vw,7.5rem)] mb-4">
@@ -141,7 +141,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             className="relative inline-block mb-8"
           >
             <p className="font-hand text-xl md:text-2xl text-ink/80 max-w-xl">
-              hand-drawn cards & doodles for the moments that deserve a{" "}
+              Hand-drawn cards & doodles for the moments that deserve a{" "}
               <span className="ink-underline font-semibold">real</span> hello.
             </p>
           </motion.div>
@@ -159,7 +159,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
                 className="relative px-7 py-3.5 font-ui text-lg text-ink bg-sketchYellow pencil-cursor transition-shadow hover:shadow-[6px_8px_0_rgba(26,26,26,0.18)]"
               >
                 <RoughBox seed={11} strokeColor="#1a1a1a" strokeWidth={2} roughness={2} />
-                <span className="relative">browse the gallery →</span>
+                <span className="relative">Browse the gallery →</span>
               </button>
             </MagneticButton>
 
@@ -175,7 +175,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
                   className="relative px-7 py-3.5 font-ui text-lg text-paper bg-ink pencil-cursor transition-shadow hover:shadow-[6px_8px_0_rgba(255,77,141,0.35)]"
                 >
                   <RoughBox seed={4} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
-                  <span className="relative">Got an idea? let's do it!</span>
+                  <span className="relative">Got an idea? Let's do it!</span>
                 </button>
               </div>
             </MagneticButton>
@@ -205,7 +205,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
               ))}
             </div>
             <span className="font-hand text-sm text-ink/70">
-              loved by 800+ humans worldwide
+              Loved by 800+ humans worldwide
             </span>
           </motion.div>
         </motion.div>
@@ -235,7 +235,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             </div>
             <div className="relative mt-2 px-2 flex justify-between items-baseline">
               <span className="font-display text-2xl">Best-tea</span>
-              <span className="font-ui text-sm text-ink/60">popular pick</span>
+              <span className="font-ui text-sm text-ink/60">Popular pick</span>
             </div>
           </motion.div>
 
@@ -256,7 +256,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
         className="absolute bottom-6 left-1/2 -translate-x-1/2 font-ui text-xs text-ink/60 flex flex-col items-center gap-1"
         aria-label="Scroll down"
       >
-        scroll
+        Scroll
         <svg width="16" height="22" viewBox="0 0 16 22">
           <path d="M8 2 Q 6 11, 8 18" fill="none" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round" />
           <path d="M3 14 Q 8 22, 13 14" fill="none" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round" />

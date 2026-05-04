@@ -31,7 +31,7 @@ export const sketches: Sketch[] = [
   {
     id: "best-tea",
     title: "Best-tea",
-    pun: "for your number-one bestie.",
+    pun: "For your number-one bestie.",
     Component: BestTea,
     image: "/sketches/best-tea.jpg",
     price: 12,
@@ -41,7 +41,7 @@ export const sketches: Sketch[] = [
   {
     id: "happy-bday-girl",
     title: "Happy Birthday Girl",
-    pun: "long-distance? heart-string-close.",
+    pun: "Long-distance? Heart-string-close.",
     Component: PhoneCallDuo,
     image: "/sketches/happy-birthday-girl.jpg",
     price: 12,
@@ -51,7 +51,7 @@ export const sketches: Sketch[] = [
   {
     id: "eggstra-happy",
     title: "Egg-stra Happy",
-    pun: "you make my life egg-stra.",
+    pun: "You make my life egg-stra.",
     Component: EggstraHappy,
     image: "/sketches/eggstra-happy.jpg",
     price: 12,
@@ -61,7 +61,7 @@ export const sketches: Sketch[] = [
   {
     id: "got-your-back",
     title: "I Got Your Back",
-    pun: "literally, see?",
+    pun: "Literally, see?",
     Component: GotYourBack,
     image: "/sketches/got-your-back.jpg",
     price: 12,
@@ -71,7 +71,7 @@ export const sketches: Sketch[] = [
   {
     id: "bee-mine",
     title: "Bee Mine",
-    pun: "buzz-worthy crush vibes.",
+    pun: "Buzz-worthy crush vibes.",
     Component: BeeMine,
     price: 10,
     category: "Love",
@@ -80,7 +80,7 @@ export const sketches: Sketch[] = [
   {
     id: "pawsitive-vibes",
     title: "Pawsitive Vibes",
-    pun: "for the pet-parent in your life.",
+    pun: "For the pet-parent in your life.",
     Component: PawsitiveVibes,
     price: 10,
     category: "Friendship",
@@ -89,7 +89,7 @@ export const sketches: Sketch[] = [
   {
     id: "you-rock",
     title: "You Rock",
-    pun: "geologically speaking.",
+    pun: "Geologically speaking.",
     Component: YouRock,
     price: 10,
     category: "Puns",
@@ -98,7 +98,7 @@ export const sketches: Sketch[] = [
   {
     id: "donut-worry",
     title: "Donut Worry",
-    pun: "be happy. eat sprinkles.",
+    pun: "Be happy. Eat sprinkles.",
     Component: DonutWorry,
     price: 10,
     category: "Puns",
@@ -107,7 +107,7 @@ export const sketches: Sketch[] = [
   {
     id: "berry-special",
     title: "Berry Special",
-    pun: "for someone strawb-incredible.",
+    pun: "For someone strawb-incredible.",
     Component: BerrySpecial,
     price: 10,
     category: "Love",
@@ -116,7 +116,7 @@ export const sketches: Sketch[] = [
   {
     id: "sun-sational",
     title: "Sun-sational",
-    pun: "brighter than your monday.",
+    pun: "Brighter than your Monday.",
     Component: SunSational,
     price: 10,
     category: "Puns",
