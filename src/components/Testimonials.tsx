@@ -4,8 +4,8 @@ import { RoughBox } from "./RoughBox";
 const quotes = [
   {
     text: "I cried. Like, full crying. My best friend made hers her phone wallpaper.",
-    name: "Priya",
-    where: "London",
+    name: "Linda",
+    where: "Kigali",
     color: "#FF4D8D",
   },
   {
@@ -15,7 +15,7 @@ const quotes = [
     color: "#4A90E2",
   },
   {
-    text: "Actual hand-drawn? In 2025? I didn't know I needed this until it arrived.",
+    text: "Actual hand-drawn? In 2026? I didn't know I needed this until it arrived.",
     name: "Sade",
     where: "Lagos",
     color: "#F6C667",

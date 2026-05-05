@@ -33,8 +33,7 @@ export function InkReveal({
       className={className}
       style={{ willChange: "clip-path" }}
       initial={initial}
-      whileInView={{ clipPath: "inset(0 0 0 0)" }}
-      viewport={{ once: true, margin: "-50px" }}
+      animate={{ clipPath: "inset(0 0 0 0)" }}
       transition={{ duration: 0.95, ease: [0.4, 0, 0.2, 1], delay: delay / 1000 }}
     >
       {children}

@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 export type Route =
   | { name: "home" }
   | { name: "compose" }
+  | { name: "gallery" }
   | { name: "read"; payload?: string };
 
 function parse(): Route {
   const raw = window.location.hash.replace(/^#/, "");
   if (!raw || raw === "/" || raw === "top") return { name: "home" };
   if (raw.startsWith("/compose")) return { name: "compose" };
+  if (raw.startsWith("/gallery")) return { name: "gallery" };
   if (raw.startsWith("/read")) {
     const q = raw.split("?")[1] ?? "";
     const params = new URLSearchParams(q);

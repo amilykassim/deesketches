@@ -16,6 +16,7 @@ export function SketchCard({ sketch, onPick, index }: Props) {
   const tilt = (index % 2 === 0 ? -1 : 1) * (1 + ((index * 7) % 3));
 
   const Inner = sketch.Component;
+  const isHandDrawn = !!sketch.image;
 
   return (
     <motion.button
@@ -26,8 +27,7 @@ export function SketchCard({ sketch, onPick, index }: Props) {
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
       initial={{ opacity: 0, y: 30, rotate: tilt }}
-      whileInView={{ opacity: 1, y: 0, rotate: tilt }}
-      viewport={{ once: true, margin: "-60px" }}
+      animate={{ opacity: 1, y: 0, rotate: tilt }}
       transition={{ duration: 0.55, delay: (index % 6) * 0.06, ease: "easeOut" }}
       whileHover={{ y: -8, rotate: tilt + (tilt > 0 ? 1.5 : -1.5), scale: 1.02 }}
       className="group relative text-left bg-paper p-3 rounded-sm pencil-cursor focus:outline-none"
@@ -83,14 +83,31 @@ export function SketchCard({ sketch, onPick, index }: Props) {
       </div>
 
       {/* meta */}
-      <div className="relative flex items-end justify-between mt-3 px-1">
-        <div>
+      <div className="relative flex items-end justify-between mt-3 px-1 gap-3">
+        <div className="min-w-0">
+          <span
+            className="inline-block font-ui text-[10px] uppercase tracking-[0.12em] px-2 py-0.5 mb-1.5 select-none"
+            style={{
+              background: "#FBF7F0",
+              color: "#1a1a1a",
+              border: "1.5px solid #1a1a1a",
+              borderRadius: "999px",
+              transform: `rotate(${index % 2 === 0 ? -2 : 1.5}deg)`,
+            }}
+            title={
+              isHandDrawn
+                ? "One-of-a-kind original on paper"
+                : "Drawn digitally — produced from the studio"
+            }
+          >
+            {isHandDrawn ? "✎ Hand-drawn" : "⎙ Digital-drawn"}
+          </span>
           <h3 className="font-display text-2xl leading-none text-ink">
             {sketch.title}
           </h3>
           <p className="font-hand text-sm text-ink/70 mt-1">{sketch.pun}</p>
         </div>
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <div className="font-ui text-xs text-ink/60 uppercase tracking-wider">
             {sketch.category}
           </div>

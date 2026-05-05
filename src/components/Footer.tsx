@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="relative border-t border-ink/10 py-10 px-5">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <a href="#top" className="inline-flex flex-col leading-none">
-          <span className="font-display text-2xl text-ink">Tinynotes</span>
+          <span className="font-display text-2xl text-ink">Tinnynotes</span>
           <RoughUnderline color="#FF4D8D" thickness={2.5} />
         </a>
 
@@ -37,7 +37,7 @@ export function Footer() {
             </svg>
           </a>
           <a
-            href="mailto:hello@tinynotes.studio"
+            href="mailto:hello@tinnynotes.studio"
             aria-label="Email"
             className="hover:rotate-6 transition-transform"
           >
@@ -51,7 +51,14 @@ export function Footer() {
         <p className="font-ui text-xs text-ink/55 text-center md:text-right flex items-center gap-2">
           Made with
           <Doodle kind="heart" color="#FF4D8D" size={16} />
-          and a wobbly hand
+          <a
+            href="http://velstays.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-ink underline decoration-sketchPink decoration-2 underline-offset-4 hover:text-sketchPink transition-colors pencil-cursor"
+          >
+            By Velstays
+          </a>
           <span className="opacity-60">· © {new Date().getFullYear()}</span>
         </p>
       </div>

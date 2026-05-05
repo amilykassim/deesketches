@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
   text: string;
@@ -25,10 +25,15 @@ export function Typewriter({
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const onDoneRef = useRef(onDone);
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  }, [onDone]);
+
   useEffect(() => {
     if (reduceMotion) {
       setCount(visibleWords);
-      onDone?.();
+      onDoneRef.current?.();
       return;
     }
     setCount(0);
@@ -43,7 +48,7 @@ export function Typewriter({
         if (i < visibleWords) {
           timer = setTimeout(tick, speed);
         } else {
-          onDone?.();
+          onDoneRef.current?.();
         }
       };
       timer = setTimeout(tick, speed);
@@ -54,7 +59,7 @@ export function Typewriter({
       clearTimeout(timer);
       clearTimeout(startTimer);
     };
-  }, [text, speed, delay, visibleWords, reduceMotion, onDone]);
+  }, [text, speed, delay, visibleWords, reduceMotion]);
 
   return (
     <span className={className}>

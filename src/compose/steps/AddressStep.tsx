@@ -39,9 +39,9 @@ export function AddressStep({
       `${address.city}, ${address.region} ${address.zip}`,
       address.country,
       "",
-      "Sent via the Tinynotes storybook composer.",
+      "Sent via the Tinnynotes storybook composer.",
     ].join("\n");
-    const url = `mailto:hello@tinynotes.studio?subject=${encodeURIComponent(
+    const url = `mailto:hello@tinnynotes.studio?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
     window.open(url, "_blank", "noopener");
