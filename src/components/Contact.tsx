@@ -4,7 +4,7 @@ import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
 import { Doodle } from "./Doodle";
 
-const EMAIL = "hello@deesketches.studio";
+const EMAIL = "hello@tinynotes.studio";
 
 export function Contact() {
   const [name, setName] = useState("");
@@ -15,7 +15,7 @@ export function Contact() {
     e.preventDefault();
     const subject = encodeURIComponent(`Sketch idea from ${name || "a stranger"}`);
     const body = encodeURIComponent(
-      `Hi! I'd love a sketch.\n\nName: ${name}\nEmail: ${email}\n\nIdea:\n${idea}\n\n— Sent from deesketches.studio`
+      `Hi! I'd love a sketch.\n\nName: ${name}\nEmail: ${email}\n\nIdea:\n${idea}\n\n— Sent from tinynotes.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };

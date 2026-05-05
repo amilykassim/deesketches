@@ -26,18 +26,21 @@ export function Navbar({ onCommission }: Props) {
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 py-4">
         <a href="#top" className="relative inline-flex flex-col leading-none">
-          <span className="font-display text-3xl text-ink">Deesketches</span>
+          <span className="font-display text-3xl text-ink">Tinynotes</span>
           <RoughUnderline color="#FF4D8D" thickness={3} />
         </a>
         <div className="hidden sm:flex items-center gap-7 font-ui text-ink/85">
-          <a href="#story" className="hover:text-sketchPink transition-colors">
-            Story
+          <a href="#/" className="hover:text-sketchPink transition-colors">
+            Home
+          </a>
+          <a href="#/compose" className="hover:text-sketchPink transition-colors">
+            Send a card
+          </a>
+          <a href="#/read" className="hover:text-sketchPink transition-colors">
+            I have a key
           </a>
           <a href="#gallery" className="hover:text-sketchPink transition-colors">
             Gallery
-          </a>
-          <a href="#how" className="hover:text-sketchPink transition-colors">
-            How
           </a>
           <a href="#contact" className="hover:text-sketchPink transition-colors">
             Contact

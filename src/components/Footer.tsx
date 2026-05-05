@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="relative border-t border-ink/10 py-10 px-5">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <a href="#top" className="inline-flex flex-col leading-none">
-          <span className="font-display text-2xl text-ink">Deesketches</span>
+          <span className="font-display text-2xl text-ink">Tinynotes</span>
           <RoughUnderline color="#FF4D8D" thickness={2.5} />
         </a>
 
@@ -37,7 +37,7 @@ export function Footer() {
             </svg>
           </a>
           <a
-            href="mailto:hello@deesketches.studio"
+            href="mailto:hello@tinynotes.studio"
             aria-label="Email"
             className="hover:rotate-6 transition-transform"
           >
