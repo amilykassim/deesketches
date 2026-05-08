@@ -1,4 +1,4 @@
-# tinnynotes
+# Andiko
 
 ## Develop
 

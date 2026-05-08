@@ -93,7 +93,7 @@ export function Gallery({ onPick }: Props) {
               >
                 ⎙ Digital-drawn
               </span>
-              <span>= drawn in tinny notes studio by the artist</span>
+              <span>= drawn in Andiko studio by the artist</span>
             </span>
           </div>
         </div>

@@ -3,8 +3,8 @@ import "./globals.css";
 import { Shell } from "./shell";
 
 export const metadata: Metadata = {
-  title: "Tinnynotes · tiny sketches, big feelings",
-  description: "Tinnynotes — hand-drawn cards & doodles, made one at a time.",
+  title: "Andiko · tiny sketches, big feelings",
+  description: "Andiko — hand-drawn cards & doodles, made one at a time.",
   icons: { icon: "/favicon.svg" },
 };
 

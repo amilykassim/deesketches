@@ -4,10 +4,10 @@ import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
 import { Doodle } from "./Doodle";
 
-const EMAIL = "hello@tinnynotes.studio";
+const EMAIL = "hello@andiko.studio";
 // WhatsApp number in international format, digits only (no '+', spaces, or dashes).
 // Replace with the studio's real number.
-const WHATSAPP_NUMBER = "1234567890";
+const WHATSAPP_NUMBER = "250788459885";
 
 export function Contact() {
   const [idea, setIdea] = useState("");
@@ -21,7 +21,7 @@ export function Contact() {
     }
     setError("");
     const text = encodeURIComponent(
-      `Hi! I'd love a sketch.\n\n${idea}\n\n— Sent from tinnynotes.studio`
+      `Hi! I'd love a sketch.\n\n${idea}\n\n— Sent from andiko.studio`
     );
     window.open(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`,

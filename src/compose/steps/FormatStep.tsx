@@ -29,7 +29,7 @@ export function FormatStep({ onPick }: Props) {
           color="#4A90E2"
           accent="star"
           title="Hand-made card"
-          subtitle="Mailed by Tinny notes"
+          subtitle="Mailed by Andiko"
           desc="The full digital story too, plus a real, hand-drawn card sent in the post."
           onClick={() => onPick("physical")}
         />

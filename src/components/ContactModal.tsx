@@ -4,7 +4,7 @@ import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
 import type { Sketch } from "../data/sketches";
 
-const EMAIL = "hello@tinnynotes.studio";
+const EMAIL = "hello@andiko.studio";
 
 type Props = {
   open: boolean;
@@ -32,7 +32,7 @@ export function ContactModal({ open, sketch, onClose }: Props) {
     const title = sketch ? sketch.title : "a custom sketch";
     const subject = encodeURIComponent(`Sketch inquiry: ${title}`);
     const body = encodeURIComponent(
-      `Hi! I'd like to order "${title}".\n\nName: ${name}\nEmail: ${email}\n\nNote:\n${note}\n\n— Sent from tinnynotes.studio`
+      `Hi! I'd like to order "${title}".\n\nName: ${name}\nEmail: ${email}\n\nNote:\n${note}\n\n— Sent from andiko.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };

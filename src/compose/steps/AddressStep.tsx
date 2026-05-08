@@ -39,9 +39,9 @@ export function AddressStep({
       `${address.city}, ${address.region} ${address.zip}`,
       address.country,
       "",
-      "Sent via the Tinnynotes storybook composer.",
+      "Sent via the Andiko storybook composer.",
     ].join("\n");
-    const url = `mailto:hello@tinnynotes.studio?subject=${encodeURIComponent(
+    const url = `mailto:hello@andiko.studio?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
     window.open(url, "_blank", "noopener");
@@ -71,7 +71,7 @@ export function AddressStep({
           onClick={submit}
           className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor transition-colors"
         >
-          Email order to Tinny notes →
+          Email order to Andiko →
         </button>
       </div>
       <p className="font-hand text-xs text-center text-ink/50 mt-3">

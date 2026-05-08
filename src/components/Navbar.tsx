@@ -29,8 +29,10 @@ export function Navbar({ onCommission }: Props) {
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 py-4">
         <Link href="/" className="relative inline-flex flex-col leading-none">
-          <span className="font-display text-3xl text-ink">Tinnynotes</span>
-          <RoughUnderline color="#FF4D8D" thickness={3} />
+          <span className="font-display text-3xl text-ink">Andiko</span>
+          <div className="w-24 mx-auto">
+            <RoughUnderline color="#FF4D8D" thickness={3} />
+          </div>
         </Link>
         <div className="hidden sm:flex items-center gap-7 font-ui text-ink/85">
           <Link href="/" className="hover:text-sketchPink transition-colors">
