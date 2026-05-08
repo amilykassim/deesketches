@@ -10,6 +10,16 @@ dist-ssr
 build
 out
 
+# Next.js
+.next
+next-env.d.ts
+
+# Local filesystem storage driver
+.storage
+
+# Drizzle generated migrations are kept in repo, but the .drizzle build cache is not
+.drizzle
+
 # Vite
 .vite
 *.local

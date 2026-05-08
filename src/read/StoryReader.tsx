@@ -1,11 +1,13 @@
 import React, { forwardRef, useEffect, useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 import type { Sketch } from "../data/sketches";
-import type { Chapter } from "../data/stories";
 import { RoughBox } from "../components/RoughBox";
 import { Doodle } from "../components/Doodle";
+import { AudioPlayer } from "./AudioPlayer";
+import { GiftBackPrompt } from "./GiftBackPrompt";
 
-type Pair = { sketch: Sketch | undefined; chapter: Chapter | undefined };
+export type ReaderChapter = { title: string; body: string };
+type Pair = { sketch: Sketch | undefined; chapter: ReaderChapter | undefined };
 
 type Props = {
   title: string;
@@ -13,6 +15,8 @@ type Props = {
   recipient: string;
   secretKey: string;
   pairs: Pair[];
+  bookId?: string | null;
+  audioUrl?: string | null;
 };
 
 export function StoryReader({
@@ -21,9 +25,18 @@ export function StoryReader({
   recipient,
   secretKey,
   pairs,
+  bookId = null,
+  audioUrl = null,
 }: Props) {
   const bookRef = useRef<any>(null);
   const [page, setPage] = useState(0);
+  const [showGiftBack, setShowGiftBack] = useState(false);
+  const giftBackKey = bookId
+    ? `tn_giftback_seen_${bookId}`
+    : null;
+  const completedKey = bookId
+    ? `tn_seen_book_completed_${bookId}`
+    : null;
 
   const flip = () => bookRef.current?.pageFlip?.();
 
@@ -72,6 +85,41 @@ export function StoryReader({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Detect reaching the final page (end-flourish) → fire book_completed once,
+  // and trigger the gift-back prompt unless this reader has already seen it.
+  useEffect(() => {
+    if (activeLogical !== logicalCount - 1) return;
+    if (typeof window === "undefined") return;
+
+    if (bookId && completedKey && !window.localStorage.getItem(completedKey)) {
+      window.localStorage.setItem(completedKey, "1");
+      void fetch("/api/events/book-completed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId }),
+      }).catch(() => {});
+    }
+
+    if (giftBackKey && !window.localStorage.getItem(giftBackKey)) {
+      setShowGiftBack(true);
+    } else if (!bookId) {
+      // Legacy URL-payload books: dedup using the secret key
+      const legacyKey = `tn_giftback_seen_legacy_${secretKey}`;
+      if (!window.localStorage.getItem(legacyKey)) {
+        setShowGiftBack(true);
+      }
+    }
+  }, [activeLogical, logicalCount, bookId, completedKey, giftBackKey, secretKey]);
+
+  const dismissGiftBack = () => {
+    setShowGiftBack(false);
+    if (giftBackKey) {
+      window.localStorage.setItem(giftBackKey, "1");
+    } else {
+      window.localStorage.setItem(`tn_giftback_seen_legacy_${secretKey}`, "1");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center pt-24 pb-12 px-4">
@@ -144,6 +192,15 @@ export function StoryReader({
           Next page →
         </button>
       </div>
+
+      {audioUrl && <AudioPlayer src={audioUrl} />}
+      {showGiftBack && (
+        <GiftBackPrompt
+          sender={sender}
+          bookId={bookId}
+          onDismiss={dismissGiftBack}
+        />
+      )}
     </div>
   );
 }
@@ -264,7 +321,7 @@ const RightTextPage = forwardRef<
       {chapter && (
         <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-center">
           <div className="font-ui text-xs uppercase tracking-wider text-ink/55 mb-2">
-            Chapter {chapter.n} of {totalChapters}
+            Chapter {index + 1} of {totalChapters}
           </div>
           <h2 className="font-display text-3xl sm:text-4xl mb-4 leading-tight">
             {chapter.title}

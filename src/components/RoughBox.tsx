@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { roughRectPath } from "../lib/rough";
+import { useIsMounted } from "../lib/use-is-mounted";
 
 type Props = {
   seed?: number;
@@ -32,14 +33,17 @@ export function RoughBox({
   width = 300,
   height = 200,
 }: Props) {
+  const mounted = useIsMounted();
   const paths = useMemo(
     () =>
-      roughRectPath(inset, inset, width - inset * 2, height - inset * 2, {
-        seed,
-        roughness,
-        bowing,
-      }),
-    [seed, roughness, bowing, inset, width, height]
+      mounted
+        ? roughRectPath(inset, inset, width - inset * 2, height - inset * 2, {
+            seed,
+            roughness,
+            bowing,
+          })
+        : [],
+    [seed, roughness, bowing, inset, width, height, mounted]
   );
 
   return (

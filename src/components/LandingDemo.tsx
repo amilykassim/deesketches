@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
@@ -5,13 +7,13 @@ import {
   useInView,
   useReducedMotion,
 } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
 import { Doodle } from "./Doodle";
 import { Typewriter } from "./Typewriter";
 import { ConfettiBurst } from "./ConfettiBurst";
 import { MagneticButton } from "./MagneticButton";
-import { navigate } from "../lib/router";
 
 const SCENE_DURATIONS = [4500, 5000, 6500, 5000, 11000];
 
@@ -65,6 +67,7 @@ const SCENE_LABELS = [
 ];
 
 export function LandingDemo() {
+  const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { margin: "-20% 0px -20% 0px" });
 
@@ -284,7 +287,7 @@ export function LandingDemo() {
         <div className="mt-10 flex flex-col items-center gap-3">
           <MagneticButton>
             <button
-              onClick={() => navigate("/compose")}
+              onClick={() => router.push("/compose")}
               className="font-ui px-8 py-4 bg-ink text-paper text-lg pencil-cursor"
               style={{ boxShadow: "6px 6px 0 #FF4D8D" }}
             >

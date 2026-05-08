@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { roughLinePath } from "../lib/rough";
+import { useIsMounted } from "../lib/use-is-mounted";
 
 type Props = {
   color?: string;
@@ -14,7 +15,9 @@ export function RoughUnderline({
   thickness = 4,
   className = "",
 }: Props) {
+  const mounted = useIsMounted();
   const paths = useMemo(() => {
+    if (!mounted) return [];
     const a = roughLinePath(2, 6, 198, 6, { seed, roughness: 1.8, bowing: 3 });
     const b = roughLinePath(4, 11, 196, 11, {
       seed: seed + 11,
@@ -22,7 +25,7 @@ export function RoughUnderline({
       bowing: 4,
     });
     return [...a, ...b];
-  }, [seed]);
+  }, [seed, mounted]);
 
   return (
     <svg

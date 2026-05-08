@@ -44,6 +44,5 @@ export function decodePayload(s: string): Payload | null {
 
 export function buildShareUrl(payload: Payload): string {
   const enc = encodePayload(payload);
-  const base = window.location.origin + window.location.pathname;
-  return `${base}#/read?p=${enc}`;
+  return `${window.location.origin}/read?p=${enc}`;
 }

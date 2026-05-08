@@ -7,8 +7,7 @@
 }
 
 html,
-body,
-#root {
+body {
   height: 100%;
 }
 
@@ -26,7 +25,6 @@ body {
     auto;
 }
 
-/* Keep system cursors where they help: typing, text selection */
 input,
 textarea {
   cursor: text;
@@ -41,7 +39,6 @@ html {
   color: #fbf7f0;
 }
 
-/* Paper grain texture overlay — subtle SVG noise */
 .paper-grain::before {
   content: "";
   position: fixed;
@@ -66,7 +63,6 @@ html {
   );
 }
 
-/* Pencil cursor on key CTAs */
 .pencil-cursor {
   cursor:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M3 25 L8 23 L23 8 L20 5 L5 20 Z' fill='%23F6C667' stroke='%231a1a1a' stroke-width='1.5' stroke-linejoin='round'/><path d='M5 20 L8 23' stroke='%231a1a1a' stroke-width='1.5'/></svg>")
@@ -74,7 +70,6 @@ html {
     auto;
 }
 
-/* Hand-drawn underline accent for inline emphasis */
 .ink-underline {
   background-image: linear-gradient(transparent 60%, #ffd66e 60%);
   background-size: 100% 100%;
@@ -82,7 +77,6 @@ html {
   padding: 0 2px;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

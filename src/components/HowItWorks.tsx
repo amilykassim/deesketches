@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { RoughBox } from "./RoughBox";
 import { Doodle } from "./Doodle";
+import { HowItWorksMobileStack } from "./HowItWorksMobileStack";
 
 const steps = [
   {
@@ -56,7 +57,9 @@ export function HowItWorks() {
           </div>
         </div>
 
-        <div className="relative grid md:grid-cols-3 gap-8 md:gap-4">
+        <HowItWorksMobileStack steps={steps} />
+
+        <div className="relative hidden md:grid md:grid-cols-3 gap-8 md:gap-4">
           {/* hand-drawn arrows between steps (desktop only) */}
           <svg
             viewBox="0 0 1000 60"

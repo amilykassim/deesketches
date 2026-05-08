@@ -1,18 +1,3 @@
-import { adjectives, nouns } from "../data/wordlists";
-
-export type SecretKey = {
-  key: string;
-  seed: number;
-};
-
-export function generateKey(): SecretKey {
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 900) + 100;
-  const key = `${adj}-${noun}-${num}`;
-  return { key, seed: keyToSeed(key) };
-}
-
 export function keyToSeed(key: string): number {
   let h = 2166136261;
   for (let i = 0; i < key.length; i++) {
@@ -23,7 +8,8 @@ export function keyToSeed(key: string): number {
 }
 
 export function isValidKeyShape(key: string): boolean {
-  return /^[A-Z]+-[A-Z]+-\d{3}$/.test(key.trim().toUpperCase());
+  const t = key.trim();
+  return t.length >= 1 && t.length <= 64;
 }
 
 /** Mulberry32 — small deterministic PRNG seeded from the key. */

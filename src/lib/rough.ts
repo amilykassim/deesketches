@@ -3,7 +3,8 @@ import type { RoughGenerator } from "roughjs/bin/generator";
 
 let _gen: RoughGenerator | null = null;
 
-export function generator(): RoughGenerator {
+export function generator(): RoughGenerator | null {
+  if (typeof document === "undefined") return null;
   if (!_gen) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     _gen = rough.svg(svg).generator;
@@ -45,6 +46,7 @@ export function roughRectPath(
   opts: { seed?: number; roughness?: number; bowing?: number } = {}
 ) {
   const g = generator();
+  if (!g) return [];
   const drawable = g.rectangle(x, y, w, h, {
     seed: opts.seed ?? 1,
     roughness: opts.roughness ?? 1.6,
@@ -63,6 +65,7 @@ export function roughLinePath(
   opts: { seed?: number; roughness?: number; bowing?: number } = {}
 ) {
   const g = generator();
+  if (!g) return [];
   const drawable = g.line(x1, y1, x2, y2, {
     seed: opts.seed ?? 1,
     roughness: opts.roughness ?? 1.4,
@@ -81,6 +84,7 @@ export function roughEllipsePath(
   opts: { seed?: number; roughness?: number; bowing?: number } = {}
 ) {
   const g = generator();
+  if (!g) return [];
   const drawable = g.ellipse(cx, cy, w, h, {
     seed: opts.seed ?? 1,
     roughness: opts.roughness ?? 1.5,

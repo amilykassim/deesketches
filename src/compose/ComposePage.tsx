@@ -3,15 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Category } from "../data/sketches";
 import { sketches } from "../data/sketches";
 import { arcsForCategory } from "../data/stories";
-import { generateKey, rngFromSeed } from "../lib/key";
 import type { CardFormat, Payload } from "../lib/payload";
 import { FormatStep } from "./steps/FormatStep";
 import { OccasionStep } from "./steps/OccasionStep";
 import { CardCountStep } from "./steps/CardCountStep";
 import { SketchPickStep } from "./steps/SketchPickStep";
-import { GenerateStep } from "./steps/GenerateStep";
+import { WriterChoiceStep } from "./steps/WriterChoiceStep";
+import { EditorStep } from "./steps/EditorStep";
 import { NamesStep } from "./steps/NamesStep";
+import { AudioStep } from "./steps/AudioStep";
 import { AddressStep } from "./steps/AddressStep";
+import { KeyStep } from "./steps/KeyStep";
 import { RevealStep } from "./steps/RevealStep";
 
 export type StepName =
@@ -19,9 +21,12 @@ export type StepName =
   | "occasion"
   | "count"
   | "sketch"
-  | "generate"
+  | "writer-choice"
+  | "editor"
   | "names"
+  | "audio"
   | "address"
+  | "key"
   | "reveal";
 
 export type Address = {
@@ -31,6 +36,10 @@ export type Address = {
   zip: string;
   country: string;
 };
+
+export type StorySource = "self" | "magic_writer";
+
+export type Chapter = { title: string; body: string };
 
 export type ComposeState = {
   step: StepName;
@@ -44,6 +53,9 @@ export type ComposeState = {
   arcId: string | null;
   key: string | null;
   seed: number | null;
+  storySource: StorySource | null;
+  chapters: Chapter[];
+  audioClipId: string | null;
 };
 
 type Action =
@@ -57,16 +69,18 @@ const STEP_ORDER: StepName[] = [
   "occasion",
   "count",
   "sketch",
-  "generate",
+  "writer-choice",
+  "editor",
   "names",
+  "audio",
   "address",
+  "key",
   "reveal",
 ];
 
 function nextStep(s: ComposeState): StepName {
   const idx = STEP_ORDER.indexOf(s.step);
   let nextIdx = idx + 1;
-  // Skip address for digital
   while (nextIdx < STEP_ORDER.length) {
     const candidate = STEP_ORDER[nextIdx];
     if (candidate === "address" && s.format !== "physical") {
@@ -117,6 +131,9 @@ const initial: ComposeState = {
   arcId: null,
   key: null,
   seed: null,
+  storySource: null,
+  chapters: [],
+  audioClipId: null,
 };
 
 export function ComposePage() {
@@ -127,16 +144,29 @@ export function ComposePage() {
   const next = () => dispatch({ type: "next" });
   const back = () => dispatch({ type: "back" });
 
-  // When entering "generate", pick an arc deterministically and stash a key.
-  const enterGenerate = () => {
-    if (!state.category) return;
-    const k = generateKey();
-    const rng = rngFromSeed(k.seed);
-    const candidates = arcsForCategory(state.category);
-    const arcIdx = Math.floor(rng() * candidates.length);
-    const arc = candidates[arcIdx] ?? candidates[0];
-    set({ arcId: arc.id, key: k.key, seed: k.seed });
-    next();
+  const enterWriterChoice = (source: StorySource) => {
+    if (source === "magic_writer" && state.category) {
+      const candidates = arcsForCategory(state.category);
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      const chapters: Chapter[] = pick
+        ? pick.chapters.slice(0, state.count).map((c) => ({
+            title: c.title,
+            body: c.body,
+          }))
+        : Array.from({ length: state.count }, () => ({ title: "", body: "" }));
+      set({
+        storySource: "magic_writer",
+        arcId: pick?.id ?? null,
+        chapters,
+      });
+    } else {
+      set({
+        storySource: "self",
+        arcId: null,
+        chapters: Array.from({ length: state.count }, () => ({ title: "", body: "" })),
+      });
+    }
+    dispatch({ type: "goto", step: "editor" });
   };
 
   // Build payload for the reveal screen.
@@ -202,16 +232,21 @@ export function ComposePage() {
                 count={state.count}
                 cardIds={state.cardIds}
                 onChange={(ids) => set({ cardIds: ids })}
-                onContinue={enterGenerate}
+                onContinue={next}
                 onBack={back}
                 allSketches={sketches}
               />
             )}
-            {state.step === "generate" && state.arcId && (
-              <GenerateStep
-                arcId={state.arcId}
-                cardIds={state.cardIds}
-                onDone={next}
+            {state.step === "writer-choice" && state.category && (
+              <WriterChoiceStep onPick={enterWriterChoice} onBack={back} />
+            )}
+            {state.step === "editor" && (
+              <EditorStep
+                chapters={state.chapters}
+                count={state.count}
+                onChange={(chapters) => set({ chapters })}
+                onContinue={next}
+                onBack={back}
               />
             )}
             {state.step === "names" && (
@@ -225,6 +260,14 @@ export function ComposePage() {
                 onBack={back}
               />
             )}
+            {state.step === "audio" && (
+              <AudioStep
+                audioClipId={state.audioClipId}
+                onChange={(id) => set({ audioClipId: id })}
+                onContinue={next}
+                onBack={back}
+              />
+            )}
             {state.step === "address" && state.format === "physical" && (
               <AddressStep
                 address={state.address}
@@ -234,8 +277,26 @@ export function ComposePage() {
                 onBack={back}
               />
             )}
-            {state.step === "reveal" && payload && state.key && (
-              <RevealStep payload={payload} secretKey={state.key} />
+            {state.step === "key" && (
+              <KeyStep
+                value={state.key ?? ""}
+                onContinue={(key, seed) => {
+                  set({ key, seed });
+                  next();
+                }}
+                onBack={back}
+              />
+            )}
+            {state.step === "reveal" && payload && state.key && state.storySource && (
+              <RevealStep
+                payload={payload}
+                secretKey={state.key}
+                storySource={state.storySource}
+                arcId={state.arcId}
+                chapters={state.chapters}
+                audioClipId={state.audioClipId}
+                onChangeKey={() => dispatch({ type: "goto", step: "key" })}
+              />
             )}
           </motion.div>
         </AnimatePresence>
@@ -246,7 +307,7 @@ export function ComposePage() {
 
 function Progress({ step, format }: { step: StepName; format: CardFormat | null }) {
   const visible: StepName[] = STEP_ORDER.filter(
-    (s) => s !== "address" || format === "physical"
+    (s) => s !== "address" || format === "physical",
   );
   const idx = visible.indexOf(step);
   return (
@@ -257,12 +318,10 @@ function Progress({ step, format }: { step: StepName; format: CardFormat | null 
           className="h-1.5 rounded-full transition-all duration-300"
           style={{
             width: i === idx ? 36 : 14,
-            background:
-              i <= idx ? "#1a1a1a" : "rgba(26,26,26,0.18)",
+            background: i <= idx ? "#1a1a1a" : "rgba(26,26,26,0.18)",
           }}
         />
       ))}
     </div>
   );
 }
-
