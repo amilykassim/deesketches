@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import type { CardFormat } from "../../lib/payload";
 import { RoughBox } from "../../components/RoughBox";
 import { Doodle } from "../../components/Doodle";
@@ -54,11 +55,15 @@ function Tile({
   onClick: () => void;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
-      className="group relative bg-paper p-8 text-left pencil-cursor focus:outline-none transition-transform"
-      style={{ transform: "rotate(-1deg)" }}
+      initial={{ rotate: -1, y: 0 }}
+      whileHover={{ y: -6, rotate: -2, boxShadow: `10px 14px 0 ${color}` }}
+      whileTap={{ y: -2 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+      className="group relative bg-paper p-8 text-left pencil-cursor focus:outline-none"
+      style={{ boxShadow: `6px 8px 0 ${color}55` }}
     >
       <RoughBox
         seed={11}
@@ -81,6 +86,6 @@ function Tile({
       <div className="mt-6 font-ui text-sm text-ink/60 group-hover:text-ink transition-colors">
         Choose →
       </div>
-    </button>
+    </motion.button>
   );
 }

@@ -1,5 +1,9 @@
 import { RoughBox } from "../../components/RoughBox";
+import { CharCounter } from "../../components/CharCounter";
+import { useCharCount } from "../../lib/useCharCount";
 import { BackButton } from "./OccasionStep";
+
+const NAME_MAX = 50;
 
 type Props = {
   sender: string;
@@ -16,7 +20,11 @@ export function NamesStep({
   onContinue,
   onBack,
 }: Props) {
-  const ready = sender.trim().length > 0 && recipient.trim().length > 0;
+  const ready =
+    sender.trim().length > 0 &&
+    recipient.trim().length > 0 &&
+    sender.length <= NAME_MAX &&
+    recipient.length <= NAME_MAX;
   return (
     <section>
       <BackButton onClick={onBack} />
@@ -45,7 +53,7 @@ export function NamesStep({
           type="button"
           disabled={!ready}
           onClick={onContinue}
-          className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor transition-colors"
+          className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor"
         >
           Continue →
         </button>
@@ -65,17 +73,22 @@ function Field({
   placeholder: string;
   onChange: (v: string) => void;
 }) {
+  const cnt = useCharCount(value, NAME_MAX);
   return (
     <label className="block relative bg-paper p-5">
       <RoughBox seed={label === "From" ? 71 : 72} strokeWidth={1.4} />
-      <span className="block font-ui text-xs uppercase tracking-wider text-ink/55 mb-2">
-        {label}
-      </span>
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="block font-ui text-xs uppercase tracking-wider text-ink/55">
+          {label}
+        </span>
+        <CharCounter state={cnt} />
+      </div>
       <input
         type="text"
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        maxLength={NAME_MAX}
         className="w-full bg-transparent font-hand text-2xl text-ink placeholder-ink/30 focus:outline-none"
       />
     </label>

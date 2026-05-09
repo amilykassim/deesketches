@@ -3,7 +3,6 @@ import HTMLFlipBook from "react-pageflip";
 import type { Sketch } from "../data/sketches";
 import { RoughBox } from "../components/RoughBox";
 import { Doodle } from "../components/Doodle";
-import { AudioPlayer } from "./AudioPlayer";
 import { GiftBackPrompt } from "./GiftBackPrompt";
 
 export type ReaderChapter = { title: string; body: string };
@@ -16,7 +15,6 @@ type Props = {
   secretKey: string;
   pairs: Pair[];
   bookId?: string | null;
-  audioUrl?: string | null;
 };
 
 export function StoryReader({
@@ -26,7 +24,6 @@ export function StoryReader({
   secretKey,
   pairs,
   bookId = null,
-  audioUrl = null,
 }: Props) {
   const bookRef = useRef<any>(null);
   const [page, setPage] = useState(0);
@@ -189,11 +186,10 @@ export function StoryReader({
           disabled={page >= totalPhysical - 1}
           className="font-ui bg-ink text-paper px-5 py-2 rounded-full hover:bg-sketchPink disabled:opacity-30 pencil-cursor transition-colors"
         >
-          Next page →
+          Swipe page →
         </button>
       </div>
 
-      {audioUrl && <AudioPlayer src={audioUrl} />}
       {showGiftBack && (
         <GiftBackPrompt
           sender={sender}

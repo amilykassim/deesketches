@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Category } from "../data/sketches";
 import { sketches } from "../data/sketches";
 import { arcsForCategory } from "../data/stories";
+import { generateKey, keyToSeed } from "../lib/key";
 import type { CardFormat, Payload } from "../lib/payload";
 import { FormatStep } from "./steps/FormatStep";
 import { OccasionStep } from "./steps/OccasionStep";
@@ -13,9 +14,7 @@ import { SketchPickStep } from "./steps/SketchPickStep";
 import { WriterChoiceStep } from "./steps/WriterChoiceStep";
 import { EditorStep } from "./steps/EditorStep";
 import { NamesStep } from "./steps/NamesStep";
-import { AudioStep } from "./steps/AudioStep";
 import { AddressStep } from "./steps/AddressStep";
-import { KeyStep } from "./steps/KeyStep";
 import { RevealStep } from "./steps/RevealStep";
 
 export type StepName =
@@ -26,9 +25,7 @@ export type StepName =
   | "writer-choice"
   | "editor"
   | "names"
-  | "audio"
   | "address"
-  | "key"
   | "reveal";
 
 export type Address = {
@@ -53,11 +50,12 @@ export type ComposeState = {
   recipientName: string;
   address: Address;
   arcId: string | null;
-  key: string | null;
-  seed: number | null;
+  /** Auto-generated at session start; surfaced to the sender on the reveal screen.
+   * On collision the reveal step regenerates and retries. */
+  key: string;
+  seed: number;
   storySource: StorySource | null;
   chapters: Chapter[];
-  audioClipId: string | null;
 };
 
 type Action =
@@ -74,9 +72,7 @@ const STEP_ORDER: StepName[] = [
   "writer-choice",
   "editor",
   "names",
-  "audio",
   "address",
-  "key",
   "reveal",
 ];
 
@@ -121,25 +117,27 @@ function reducer(state: ComposeState, action: Action): ComposeState {
   }
 }
 
-const initial: ComposeState = {
-  step: "format",
-  format: null,
-  category: null,
-  count: 1,
-  cardIds: [],
-  senderName: "",
-  recipientName: "",
-  address: { street: "", city: "", region: "", zip: "", country: "" },
-  arcId: null,
-  key: null,
-  seed: null,
-  storySource: null,
-  chapters: [],
-  audioClipId: null,
-};
+function makeInitial(): ComposeState {
+  const k = generateKey();
+  return {
+    step: "format",
+    format: null,
+    category: null,
+    count: 1,
+    cardIds: [],
+    senderName: "",
+    recipientName: "",
+    address: { street: "", city: "", region: "", zip: "", country: "" },
+    arcId: null,
+    key: k,
+    seed: keyToSeed(k),
+    storySource: null,
+    chapters: [],
+  };
+}
 
 export function ComposePage() {
-  const [state, dispatch] = useReducer(reducer, initial);
+  const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
 
   const set = (patch: Partial<ComposeState>) =>
     dispatch({ type: "set", patch });
@@ -173,7 +171,7 @@ export function ComposePage() {
 
   // Build payload for the reveal screen.
   const payload: Payload | null =
-    state.key && state.category && state.cardIds.length > 0
+    state.category && state.cardIds.length > 0
       ? {
           v: 1,
           k: state.key,
@@ -185,6 +183,12 @@ export function ComposePage() {
           createdAt: Date.now(),
         }
       : null;
+
+  const regenerateKey = () => {
+    const k = generateKey({ withSuffix: true });
+    set({ key: k, seed: keyToSeed(k) });
+    return k;
+  };
 
   return (
     <main className="relative z-20 pt-28 pb-32 min-h-screen">
@@ -234,6 +238,7 @@ export function ComposePage() {
                 count={state.count}
                 cardIds={state.cardIds}
                 onChange={(ids) => set({ cardIds: ids })}
+                onChangeCategory={(c) => set({ category: c, cardIds: [] })}
                 onContinue={next}
                 onBack={back}
                 allSketches={sketches}
@@ -246,6 +251,7 @@ export function ComposePage() {
               <EditorStep
                 chapters={state.chapters}
                 count={state.count}
+                storySource={state.storySource}
                 onChange={(chapters) => set({ chapters })}
                 onContinue={next}
                 onBack={back}
@@ -262,14 +268,6 @@ export function ComposePage() {
                 onBack={back}
               />
             )}
-            {state.step === "audio" && (
-              <AudioStep
-                audioClipId={state.audioClipId}
-                onChange={(id) => set({ audioClipId: id })}
-                onContinue={next}
-                onBack={back}
-              />
-            )}
             {state.step === "address" && state.format === "physical" && (
               <AddressStep
                 address={state.address}
@@ -279,25 +277,15 @@ export function ComposePage() {
                 onBack={back}
               />
             )}
-            {state.step === "key" && (
-              <KeyStep
-                value={state.key ?? ""}
-                onContinue={(key, seed) => {
-                  set({ key, seed });
-                  next();
-                }}
-                onBack={back}
-              />
-            )}
-            {state.step === "reveal" && payload && state.key && state.storySource && (
+            {state.step === "reveal" && payload && state.storySource && (
               <RevealStep
                 payload={payload}
                 secretKey={state.key}
                 storySource={state.storySource}
                 arcId={state.arcId}
                 chapters={state.chapters}
-                audioClipId={state.audioClipId}
-                onChangeKey={() => dispatch({ type: "goto", step: "key" })}
+                cardIds={state.cardIds}
+                onRegenerateKey={regenerateKey}
               />
             )}
           </motion.div>

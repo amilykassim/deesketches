@@ -18,7 +18,7 @@ export default async function AdminDashboardLayout({
       <div className="max-w-7xl mx-auto px-5 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8">
         <aside className="md:sticky md:top-24 md:self-start">
           <nav className="font-ui text-sm space-y-1">
-            <SidebarLink href="/admin/audio">Audio library</SidebarLink>
+            <SidebarLink href="/admin/notes">Notes</SidebarLink>
             <SidebarLink href="/admin/analytics">Analytics</SidebarLink>
           </nav>
           <div className="mt-8 pt-4 border-t border-ink/10">

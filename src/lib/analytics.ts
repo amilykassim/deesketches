@@ -1,5 +1,5 @@
-import { and, between, count, countDistinct, desc, eq, gte, lt, sql } from "drizzle-orm";
-import { audioClips, books, db, events } from "./db";
+import { and, between, count, countDistinct, desc, eq, lt, sql } from "drizzle-orm";
+import { db, events } from "./db";
 
 export type Range = { from: Date; to: Date };
 
@@ -41,23 +41,40 @@ function rangeKey(r: Range): string {
   return `${r.from.toISOString()}|${r.to.toISOString()}`;
 }
 
-async function countBooksCreated(r: Range): Promise<number> {
+// All analytics now read from `events.metadata` directly. The book row that
+// used to hold sender/category/etc. lives in Redis with a 7d TTL; events are
+// the only durable source of historical context.
+const META_SENDER = sql<string>`${events.metadata}->>'sender'`;
+const META_CATEGORY = sql<string>`${events.metadata}->>'category'`;
+const META_STORY_SOURCE = sql<string>`${events.metadata}->>'storySource'`;
+
+async function countCreated(r: Range): Promise<number> {
   const [row] = await db
     .select({ n: count() })
-    .from(books)
-    .where(between(books.createdAt, r.from, r.to));
+    .from(events)
+    .where(
+      and(
+        eq(events.type, "book_created"),
+        between(events.createdAt, r.from, r.to),
+      ),
+    );
   return Number(row?.n ?? 0);
 }
 
 async function countUniqueSenders(r: Range): Promise<number> {
   const [row] = await db
-    .select({ n: countDistinct(books.sender) })
-    .from(books)
-    .where(between(books.createdAt, r.from, r.to));
+    .select({ n: countDistinct(META_SENDER) })
+    .from(events)
+    .where(
+      and(
+        eq(events.type, "book_created"),
+        between(events.createdAt, r.from, r.to),
+      ),
+    );
   return Number(row?.n ?? 0);
 }
 
-async function countEventBookIds(type: string, r: Range): Promise<number> {
+async function countDistinctEventBooks(type: string, r: Range): Promise<number> {
   const [row] = await db
     .select({ n: countDistinct(events.bookId) })
     .from(events)
@@ -80,15 +97,21 @@ async function countEvents(type: string, r: Range): Promise<number> {
 async function magicWriterRate(r: Range): Promise<{ total: number; magic: number }> {
   const [totalRow] = await db
     .select({ n: count() })
-    .from(books)
-    .where(between(books.createdAt, r.from, r.to));
-  const [magicRow] = await db
-    .select({ n: count() })
-    .from(books)
+    .from(events)
     .where(
       and(
-        between(books.createdAt, r.from, r.to),
-        eq(books.storySource, "magic_writer"),
+        eq(events.type, "book_created"),
+        between(events.createdAt, r.from, r.to),
+      ),
+    );
+  const [magicRow] = await db
+    .select({ n: count() })
+    .from(events)
+    .where(
+      and(
+        eq(events.type, "book_created"),
+        eq(META_STORY_SOURCE, "magic_writer"),
+        between(events.createdAt, r.from, r.to),
       ),
     );
   return { total: Number(totalRow?.n ?? 0), magic: Number(magicRow?.n ?? 0) };
@@ -123,14 +146,14 @@ export async function getKpis(r: Range): Promise<Kpis> {
       mw,
       mwPrev,
     ] = await Promise.all([
-      countBooksCreated(r),
-      countBooksCreated(prev),
+      countCreated(r),
+      countCreated(prev),
       countUniqueSenders(r),
       countUniqueSenders(prev),
-      countEventBookIds("book_opened", r),
-      countEventBookIds("book_opened", prev),
-      countEventBookIds("book_completed", r),
-      countEventBookIds("book_completed", prev),
+      countDistinctEventBooks("book_opened", r),
+      countDistinctEventBooks("book_opened", prev),
+      countDistinctEventBooks("book_completed", r),
+      countDistinctEventBooks("book_completed", prev),
       countEvents("gift_back_clicked", r),
       countEvents("gift_back_clicked", prev),
       magicWriterRate(r),
@@ -165,81 +188,62 @@ export async function getTimeseries(r: Range): Promise<TimeseriesPoint[]> {
   return cached(`timeseries:${rangeKey(r)}`, async () => {
     const rows = await db
       .select({
-        day: sql<string>`to_char(date_trunc('day', ${books.createdAt}), 'YYYY-MM-DD')`,
+        day: sql<string>`to_char(date_trunc('day', ${events.createdAt}), 'YYYY-MM-DD')`,
         n: count(),
       })
-      .from(books)
-      .where(between(books.createdAt, r.from, r.to))
-      .groupBy(sql`date_trunc('day', ${books.createdAt})`)
-      .orderBy(sql`date_trunc('day', ${books.createdAt})`);
+      .from(events)
+      .where(
+        and(
+          eq(events.type, "book_created"),
+          between(events.createdAt, r.from, r.to),
+        ),
+      )
+      .groupBy(sql`date_trunc('day', ${events.createdAt})`)
+      .orderBy(sql`date_trunc('day', ${events.createdAt})`);
     return rows.map((row) => ({ day: row.day, count: Number(row.n) }));
   });
 }
 
 export type Breakdowns = {
   byCategory: { category: string; count: number }[];
-  audioTopClips: { id: string; title: string; count: number }[];
-  audioAttachRate: { withAudio: number; total: number };
   magicWriterByCategory: { category: string; count: number }[];
 };
 
 export async function getBreakdowns(r: Range): Promise<Breakdowns> {
   return cached(`breakdowns:${rangeKey(r)}`, async () => {
-    const [byCategory, audioTopClips, audioCounts, magicCats] = await Promise.all([
+    const [byCategory, magicCats] = await Promise.all([
       db
-        .select({ category: books.category, n: count() })
-        .from(books)
-        .where(between(books.createdAt, r.from, r.to))
-        .groupBy(books.category)
-        .orderBy(desc(count())),
-      db
-        .select({
-          id: audioClips.id,
-          title: audioClips.title,
-          n: count(),
-        })
-        .from(books)
-        .innerJoin(audioClips, eq(audioClips.id, books.audioClipId))
-        .where(between(books.createdAt, r.from, r.to))
-        .groupBy(audioClips.id, audioClips.title)
-        .orderBy(desc(count()))
-        .limit(10),
-      db
-        .select({
-          total: count(),
-          withAudio: sql<number>`count(${books.audioClipId})`,
-        })
-        .from(books)
-        .where(between(books.createdAt, r.from, r.to)),
-      db
-        .select({ category: books.category, n: count() })
-        .from(books)
+        .select({ category: META_CATEGORY, n: count() })
+        .from(events)
         .where(
           and(
-            between(books.createdAt, r.from, r.to),
-            eq(books.storySource, "magic_writer"),
+            eq(events.type, "book_created"),
+            between(events.createdAt, r.from, r.to),
           ),
         )
-        .groupBy(books.category)
+        .groupBy(META_CATEGORY)
+        .orderBy(desc(count())),
+      db
+        .select({ category: META_CATEGORY, n: count() })
+        .from(events)
+        .where(
+          and(
+            eq(events.type, "book_created"),
+            eq(META_STORY_SOURCE, "magic_writer"),
+            between(events.createdAt, r.from, r.to),
+          ),
+        )
+        .groupBy(META_CATEGORY)
         .orderBy(desc(count())),
     ]);
 
-    const audioTotalsRow = audioCounts[0];
     return {
-      byCategory: byCategory.map((r) => ({ category: r.category, count: Number(r.n) })),
-      audioTopClips: audioTopClips.map((r) => ({
-        id: r.id,
-        title: r.title,
-        count: Number(r.n),
-      })),
-      audioAttachRate: {
-        withAudio: Number(audioTotalsRow?.withAudio ?? 0),
-        total: Number(audioTotalsRow?.total ?? 0),
-      },
-      magicWriterByCategory: magicCats.map((r) => ({
-        category: r.category,
-        count: Number(r.n),
-      })),
+      byCategory: byCategory
+        .filter((r) => r.category)
+        .map((r) => ({ category: r.category as string, count: Number(r.n) })),
+      magicWriterByCategory: magicCats
+        .filter((r) => r.category)
+        .map((r) => ({ category: r.category as string, count: Number(r.n) })),
     };
   });
 }
@@ -264,25 +268,28 @@ export async function getFeed(cursorId: number | null, limit = 50): Promise<{
       id: events.id,
       type: events.type,
       bookId: events.bookId,
-      sender: books.sender,
-      recipient: books.recipient,
+      metadata: events.metadata,
       createdAt: events.createdAt,
     })
     .from(events)
-    .leftJoin(books, eq(events.bookId, books.id))
-    .where(conds ? and(conds, gte(events.createdAt, new Date(0))) : undefined)
+    .where(conds)
     .orderBy(desc(events.id))
     .limit(limit + 1);
   const hasMore = rows.length > limit;
-  const items = rows.slice(0, limit).map((r) => ({
-    id: Number(r.id),
-    type: r.type,
-    bookId: r.bookId,
-    bookTitle: r.recipient ? `${r.sender} → ${r.recipient}` : null,
-    sender: r.sender,
-    recipient: r.recipient,
-    createdAt: r.createdAt.toISOString(),
-  }));
+  const items = rows.slice(0, limit).map((r) => {
+    const meta = (r.metadata as Record<string, unknown> | null) ?? {};
+    const sender = typeof meta.sender === "string" ? meta.sender : null;
+    const recipient = typeof meta.recipient === "string" ? meta.recipient : null;
+    return {
+      id: Number(r.id),
+      type: r.type,
+      bookId: r.bookId ?? null,
+      bookTitle: sender && recipient ? `${sender} → ${recipient}` : null,
+      sender,
+      recipient,
+      createdAt: r.createdAt.toISOString(),
+    };
+  });
   const nextCursor = hasMore ? items[items.length - 1].id : null;
   return { items, nextCursor };
 }

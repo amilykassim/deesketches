@@ -140,7 +140,7 @@ export function HowItWorksMobileStack({ steps }: { steps: Step[] }) {
       )}
 
       {!exhausted && stack.length > 0 && (
-        <div className="absolute -bottom-10 inset-x-0 text-center font-ui text-xs text-ink/45">
+        <div className="absolute -bottom-12 inset-x-0 text-center font-hand text-xl text-ink/75">
           Swipe →
         </div>
       )}

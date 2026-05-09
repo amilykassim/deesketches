@@ -38,8 +38,6 @@ type Timeseries = { points: { day: string; count: number }[] };
 
 type Breakdowns = {
   byCategory: { category: string; count: number }[];
-  audioTopClips: { id: string; title: string; count: number }[];
-  audioAttachRate: { withAudio: number; total: number };
   magicWriterByCategory: { category: string; count: number }[];
 };
 
@@ -190,28 +188,6 @@ export function AnalyticsClient() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </Panel>
-
-          <Panel title="Top audio clips">
-            {breakdowns.audioTopClips.length === 0 ? (
-              <p className="font-hand text-ink/60 text-sm">No clips attached yet.</p>
-            ) : (
-              <ul className="text-sm space-y-1 font-ui">
-                {breakdowns.audioTopClips.map((c) => (
-                  <li key={c.id} className="flex justify-between">
-                    <span className="truncate">{c.title}</span>
-                    <span className="text-ink/60">{c.count}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className="mt-3 text-xs text-ink/55 font-ui">
-              {breakdowns.audioAttachRate.total > 0
-                ? `${Math.round(
-                    (breakdowns.audioAttachRate.withAudio / breakdowns.audioAttachRate.total) * 100,
-                  )}% of books include audio (${breakdowns.audioAttachRate.withAudio}/${breakdowns.audioAttachRate.total})`
-                : "No books in this range."}
-            </p>
           </Panel>
 
           <Panel title="Magic Writer by category">

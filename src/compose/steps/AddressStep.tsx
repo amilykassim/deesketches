@@ -1,7 +1,11 @@
 import type { Address } from "../ComposePage";
 import type { Payload } from "../../lib/payload";
 import { RoughBox } from "../../components/RoughBox";
+import { CharCounter } from "../../components/CharCounter";
+import { useCharCount } from "../../lib/useCharCount";
 import { BackButton } from "./OccasionStep";
+
+const ADDRESS_MAX = 100;
 
 type Props = {
   address: Address;
@@ -22,7 +26,8 @@ export function AddressStep({
     address.street.trim() &&
     address.city.trim() &&
     address.zip.trim() &&
-    address.country.trim();
+    address.country.trim() &&
+    Object.values(address).every((v) => v.length <= ADDRESS_MAX);
 
   const submit = () => {
     if (!payload) return;
@@ -69,12 +74,12 @@ export function AddressStep({
           type="button"
           disabled={!ready}
           onClick={submit}
-          className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor transition-colors"
+          className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor"
         >
           Email order to Andiko →
         </button>
       </div>
-      <p className="font-hand text-xs text-center text-ink/50 mt-3">
+      <p className="font-hand text-sm text-center text-ink/55 mt-3">
         (Opens your mail app. The digital story is still revealed next.)
       </p>
     </section>
@@ -92,16 +97,21 @@ function Field({
   onChange: (v: string) => void;
   className?: string;
 }) {
+  const cnt = useCharCount(value, ADDRESS_MAX);
   return (
     <label className={`block relative bg-paper p-4 ${className}`}>
       <RoughBox seed={label.length * 7} strokeWidth={1.3} />
-      <span className="block font-ui text-xs uppercase tracking-wider text-ink/55 mb-1">
-        {label}
-      </span>
+      <div className="flex items-baseline justify-between mb-1">
+        <span className="block font-ui text-xs uppercase tracking-wider text-ink/55">
+          {label}
+        </span>
+        <CharCounter state={cnt} />
+      </div>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        maxLength={ADDRESS_MAX}
         className="w-full bg-transparent font-hand text-lg text-ink placeholder-ink/30 focus:outline-none"
       />
     </label>

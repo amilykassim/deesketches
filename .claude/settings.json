@@ -10,7 +10,17 @@
       "Bash(curl -sI \"http://localhost:3911/_next/image?url=%2Fsketches%2Fbest-tea.jpg&w=640&q=75\" -H \"Accept: image/avif,image/webp\")",
       "Bash(curl -sI \"http://localhost:3911/_next/image?url=%2Fsketches%2Fbest-tea.jpg&w=640&q=75\" -H \"Accept: image/avif,image/webp,image/*\")",
       "Bash(curl -sI \"http://localhost:3911/sketches/best-tea.jpg\")",
-      "Bash(curl -s -v \"http://localhost:3911/_next/image?url=%2Fsketches%2Fbest-tea.jpg&w=640&q=75\" -H \"Accept: image/avif,image/webp,image/*\")"
+      "Bash(curl -s -v \"http://localhost:3911/_next/image?url=%2Fsketches%2Fbest-tea.jpg&w=640&q=75\" -H \"Accept: image/avif,image/webp,image/*\")",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s -o /dev/null -w \"/ -> %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"/read -> %{http_code}\\\\n\" http://localhost:3000/read)",
+      "Bash(curl -s -o /dev/null -w \"/compose -> %{http_code}\\\\n\" http://localhost:3000/compose)",
+      "Bash(curl -s -o /dev/null -w \"/gallery -> %{http_code}\\\\n\" http://localhost:3000/gallery)",
+      "Bash(pnpm add *)",
+      "Bash(npm view *)",
+      "Bash(node --env-file=.env scripts/drop-legacy-fks.cjs)",
+      "Bash(git -C /Users/amilykadyl/amily-projects/sketch-dee mv app/lookup app/my-notes)",
+      "Bash(pnpm exec *)"
     ]
   }
 }

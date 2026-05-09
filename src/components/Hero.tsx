@@ -105,7 +105,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-ui text-ink/60 tracking-[0.2em] uppercase text-xs mb-5"
+            className="font-ui text-ink/60 tracking-[0.2em] uppercase text-sm mb-5"
           >
             * Hand-drawn · made one at a time *
           </motion.p>
@@ -140,7 +140,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             transition={{ duration: 0.6, delay: 1.05 }}
             className="relative inline-block mb-8"
           >
-            <p className="font-hand text-xl md:text-2xl text-ink/80 max-w-xl">
+            <p className="font-hand text-2xl md:text-[1.75rem] text-ink/85 max-w-xl leading-snug">
               Hand-drawn cards & doodles for the moments that deserve a{" "}
               <span className="ink-underline font-semibold">real</span> hello.
             </p>
@@ -204,7 +204,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
                 />
               ))}
             </div>
-            <span className="font-hand text-sm text-ink/70">
+            <span className="font-hand text-base text-ink/75">
               Loved by 800+ humans worldwide
             </span>
           </motion.div>
@@ -236,7 +236,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             </div>
             <div className="relative mt-2 px-2 flex justify-between items-baseline">
               <span className="font-display text-2xl">Best-tea</span>
-              <span className="font-ui text-sm text-ink/60">Popular pick</span>
+              <span className="font-ui text-base text-ink/65">Popular pick</span>
             </div>
           </motion.div>
 

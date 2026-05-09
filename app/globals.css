@@ -101,3 +101,73 @@ html {
   border-radius: 999px;
   border: 2px solid #fbf7f0;
 }
+
+/* ── Shared interaction states ──────────────────────────────────────────
+   One source of truth for hover/active/focus across buttons, links, and
+   nav items. Individual components keep their colour variants; this layer
+   adds consistent timing, click feedback, and a visible focus ring. */
+
+button,
+a,
+[role="button"],
+summary {
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    transform 150ms ease,
+    box-shadow 200ms ease;
+}
+
+button:active:not(:disabled),
+a:active,
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
+:focus-visible {
+  outline: 2px solid #ff4d8d;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus,
+[role="button"]:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Magic Writer streaming cursor */
+@keyframes magic-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.magic-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  vertical-align: -0.12em;
+  margin-left: 1px;
+  background: #1a1a1a;
+  animation: magic-cursor-blink 0.9s steps(1, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .magic-cursor {
+    animation: none;
+    opacity: 0.6;
+  }
+}

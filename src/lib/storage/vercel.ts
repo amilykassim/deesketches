@@ -1,4 +1,4 @@
-import { del, list, put } from "@vercel/blob";
+import { del, get, list, put } from "@vercel/blob";
 import type { PutOpts, Storage, StoredObject } from "./types";
 
 function token(): string {
@@ -11,6 +11,18 @@ function token(): string {
   return t;
 }
 
+function access(): "public" | "private" {
+  // Notes contain sender email + message content, so private is the safer
+  // default. Public stores can opt in via BLOB_ACCESS=public.
+  const raw = (process.env.BLOB_ACCESS ?? "private").toLowerCase();
+  if (raw !== "public" && raw !== "private") {
+    throw new Error(
+      `BLOB_ACCESS must be "public" or "private" (got "${raw}")`,
+    );
+  }
+  return raw;
+}
+
 export class VercelBlobStorage implements Storage {
   async put(
     key: string,
@@ -18,8 +30,11 @@ export class VercelBlobStorage implements Storage {
     opts?: PutOpts,
   ): Promise<StoredObject> {
     const result = await put(key, body, {
-      access: "public",
+      access: access(),
       addRandomSuffix: false,
+      // We use deterministic keys and rewrite blobs in-place (note status
+      // updates, openedAt). v2.x errors on existing pathnames by default.
+      allowOverwrite: true,
       token: token(),
       contentType: opts?.contentType,
     });
@@ -27,13 +42,17 @@ export class VercelBlobStorage implements Storage {
   }
 
   async get(key: string): Promise<Buffer | null> {
-    const objects = await list({ prefix: key, token: token() });
-    const exact = objects.blobs.find((b) => b.pathname === key);
-    if (!exact) return null;
-    const res = await fetch(exact.url);
-    if (!res.ok) return null;
-    const ab = await res.arrayBuffer();
-    return Buffer.from(ab);
+    try {
+      const result = await get(key, { access: access(), token: token() });
+      if (!result || result.statusCode !== 200) return null;
+      const ab = await new Response(result.stream).arrayBuffer();
+      return Buffer.from(ab);
+    } catch (e) {
+      // BlobNotFoundError → null; let other errors surface.
+      const name = (e as { name?: string } | null)?.name ?? "";
+      if (name === "BlobNotFoundError") return null;
+      throw e;
+    }
   }
 
   async list(prefix: string): Promise<StoredObject[]> {

@@ -63,39 +63,8 @@ export function Gallery({ onPick }: Props) {
             Pick your <span className="text-sketchPink">favourite feeling</span>.
           </motion.h2>
           <p className="font-hand text-lg text-ink/70 max-w-xl mx-auto">
-            Every sketch is one-of-a-kind. Order a digital or a hand drawn touch.
+            Every sketch is one-of-a-kind.
           </p>
-
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-ui text-xs text-ink/65">
-            <span className="inline-flex items-center gap-2">
-              <span
-                className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-[0.12em]"
-                style={{
-                  background: "#FBF7F0",
-                  color: "#1a1a1a",
-                  border: "1.5px solid #1a1a1a",
-                  borderRadius: "999px",
-                }}
-              >
-                ✎ Hand-drawn
-              </span>
-              <span>= drawn in the studio, hand-finished</span>
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span
-                className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-[0.12em]"
-                style={{
-                  background: "#FBF7F0",
-                  color: "#1a1a1a",
-                  border: "1.5px solid #1a1a1a",
-                  borderRadius: "999px",
-                }}
-              >
-                ⎙ Digital-drawn
-              </span>
-              <span>= drawn in Andiko studio by the artist</span>
-            </span>
-          </div>
         </div>
 
         {/* category filter */}
@@ -171,9 +140,9 @@ export function Gallery({ onPick }: Props) {
               <PageButton
                 disabled={safePage === pageCount}
                 onClick={() => goTo(safePage + 1)}
-                ariaLabel="Next page"
+                ariaLabel="Swipe page"
               >
-                next →
+                Swipe page →
               </PageButton>
             </div>
             <p className="font-hand text-sm text-ink/55">

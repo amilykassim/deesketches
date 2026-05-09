@@ -1,7 +1,6 @@
 import {
   bigserial,
   index,
-  integer,
   jsonb,
   pgTable,
   text,
@@ -11,54 +10,20 @@ import {
 
 export type Chapter = { title: string; body: string };
 
-export const audioClips = pgTable("audio_clips", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
-  mood: text("mood"),
-  blobKey: text("blob_key").notNull(),
-  blobUrl: text("blob_url").notNull(),
-  durationSec: integer("duration_sec").notNull(),
-  mimeType: text("mime_type").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
-
-export const books = pgTable(
-  "books",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    k: text("k").notNull().unique(),
-    format: text("format").notNull(),
-    category: text("category").notNull(),
-    cardIds: jsonb("card_ids").$type<string[]>().notNull(),
-    sender: text("sender").notNull(),
-    recipient: text("recipient").notNull(),
-    storySource: text("story_source").notNull(),
-    storyArcId: text("story_arc_id"),
-    chapters: jsonb("chapters").$type<Chapter[]>().notNull(),
-    audioClipId: uuid("audio_clip_id").references(() => audioClips.id, {
-      onDelete: "restrict",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (t) => ({
-    createdAtIdx: index("books_created_at_idx").on(t.createdAt),
-    categoryIdx: index("books_category_idx").on(t.category),
-  }),
-);
-
+/**
+ * Append-only analytics log. Surrives note expiry (notes themselves live in
+ * Redis with a 7-day TTL). Each event stamps its own context into `metadata`
+ * so we don't need to join back to the (gone) books table.
+ *
+ * `bookId` was named when notes lived in Postgres; it now stores the Redis
+ * note id (UUID) as an opaque correlation key, no FK.
+ */
 export const events = pgTable(
   "events",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     type: text("type").notNull(),
-    bookId: uuid("book_id").references(() => books.id, { onDelete: "set null" }),
-    audioClipId: uuid("audio_clip_id").references(() => audioClips.id, {
-      onDelete: "set null",
-    }),
+    bookId: uuid("book_id"),
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -85,10 +50,7 @@ export const adminSessions = pgTable(
   }),
 );
 
-export type Book = typeof books.$inferSelect;
-export type NewBook = typeof books.$inferInsert;
 export type Event = typeof events.$inferSelect;
-export type AudioClip = typeof audioClips.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
 
 export const EVENT_TYPES = [
@@ -97,8 +59,19 @@ export const EVENT_TYPES = [
   "book_completed",
   "gift_back_clicked",
   "magic_writer_used",
+  "note_approved",
+  "note_rejected",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 export const STORY_SOURCES = ["self", "magic_writer", "legacy_arc"] as const;
 export type StorySource = (typeof STORY_SOURCES)[number];
+
+export type EventMeta = {
+  sender?: string;
+  recipient?: string;
+  category?: string;
+  storySource?: StorySource;
+  hasEmail?: boolean;
+  rejectionReason?: string;
+};

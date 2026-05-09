@@ -1,5 +1,11 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import type { Category, Sketch } from "../../data/sketches";
-import { RoughBox } from "../../components/RoughBox";
+import { categories } from "../../data/sketches";
+import { SwipeDeck } from "../sketchPicker/SwipeDeck";
+import { SelectedList } from "../sketchPicker/SelectedList";
 import { BackButton } from "./OccasionStep";
 
 type Props = {
@@ -7,6 +13,7 @@ type Props = {
   count: number;
   cardIds: string[];
   onChange: (ids: string[]) => void;
+  onChangeCategory: (c: Category) => void;
   onContinue: () => void;
   onBack: () => void;
   allSketches: Sketch[];
@@ -17,28 +24,67 @@ export function SketchPickStep({
   count,
   cardIds,
   onChange,
+  onChangeCategory,
   onContinue,
   onBack,
   allSketches,
 }: Props) {
-  const pool = allSketches.filter((s) => s.category === category);
+  const pool = useMemo(
+    () => allSketches.filter((s) => s.category === category),
+    [allSketches, category],
+  );
+  const [skippedIds, setSkippedIds] = useState<string[]>([]);
+  const [reshuffleKey, setReshuffleKey] = useState(0);
 
-  const toggle = (id: string) => {
-    const idx = cardIds.indexOf(id);
-    if (idx >= 0) {
-      onChange(cardIds.filter((_, i) => i !== idx));
-    } else if (cardIds.length < count) {
-      onChange([...cardIds, id]);
-    }
+  const selected = useMemo(
+    () =>
+      cardIds
+        .map((id) => pool.find((s) => s.id === id))
+        .filter((s): s is Sketch => !!s),
+    [cardIds, pool],
+  );
+
+  const deck = useMemo(
+    () =>
+      pool.filter(
+        (s) => !cardIds.includes(s.id) && !skippedIds.includes(s.id),
+      ),
+    // reshuffleKey lets the user reset the deck when they exhaust it without
+    // enough picks; the dependency is intentional so React recomputes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pool, cardIds, skippedIds, reshuffleKey],
+  );
+
+  const full = cardIds.length >= count;
+  const handleSelect = (sketch: Sketch) => {
+    if (full) return;
+    if (cardIds.includes(sketch.id)) return;
+    onChange([...cardIds, sketch.id]);
   };
 
-  const move = (from: number, to: number) => {
+  const handleSkip = (sketch: Sketch) => {
+    setSkippedIds((s) => (s.includes(sketch.id) ? s : [...s, sketch.id]));
+  };
+
+  const handleRemove = (id: string) => {
+    onChange(cardIds.filter((cid) => cid !== id));
+  };
+
+  const handleMove = (from: number, to: number) => {
     if (to < 0 || to >= cardIds.length) return;
     const next = [...cardIds];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     onChange(next);
   };
+
+  const reshuffle = () => {
+    setSkippedIds([]);
+    setReshuffleKey((k) => k + 1);
+  };
+
+  // Top card on the deck (if any) — used by the on-screen buttons.
+  const topCard = deck[0];
 
   return (
     <section>
@@ -47,111 +93,127 @@ export function SketchPickStep({
         Pick {count} sketch{count > 1 ? "es" : ""}
       </h1>
       <p className="font-hand text-lg text-center text-ink/70 mb-2">
-        The order you pick is the order they're read.
+        Swipe right to pick · left to skip · order them below.
       </p>
-      <p className="font-ui text-xs text-center text-ink/55 mb-8">
+      <p className="font-ui text-sm text-center text-ink/55 mb-6">
         {cardIds.length} of {count} chosen
       </p>
 
-      {cardIds.length > 0 && (
-        <div className="mb-8">
-          <div className="font-ui text-xs uppercase tracking-wider text-ink/55 mb-3 text-center">
-            Reading order
-          </div>
-          <div className="flex flex-wrap gap-3 justify-center">
-            {cardIds.map((id, i) => {
-              const sk = pool.find((s) => s.id === id);
-              if (!sk) return null;
-              return (
-                <div
-                  key={`${id}-${i}`}
-                  className="relative bg-paper p-2 w-32 pencil-cursor"
-                  style={{ transform: `rotate(${i % 2 === 0 ? -2 : 2}deg)` }}
-                >
-                  <RoughBox seed={50 + i} strokeColor="#1a1a1a" strokeWidth={1.4} />
-                  <div className="aspect-[4/3] overflow-hidden">
-                    {sk.Component && <sk.Component />}
-                  </div>
-                  <div className="font-display text-base text-center mt-1 truncate">
-                    {i + 1}. {sk.title}
-                  </div>
-                  <div className="flex justify-between mt-1 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => move(i, i - 1)}
-                      className="font-ui text-ink/60 hover:text-ink px-1"
-                      disabled={i === 0}
-                    >
-                      ←
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggle(id)}
-                      className="font-ui text-ink/60 hover:text-sketchPink px-1"
-                    >
-                      remove
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => move(i, i + 1)}
-                      className="font-ui text-ink/60 hover:text-ink px-1"
-                      disabled={i === cardIds.length - 1}
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <CategoryStrip
+        active={category}
+        onPick={(c) => {
+          if (c === category) return;
+          setSkippedIds([]);
+          onChangeCategory(c);
+        }}
+      />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {pool.map((s, i) => {
-          const picked = cardIds.includes(s.id);
-          const full = cardIds.length >= count && !picked;
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => toggle(s.id)}
-              disabled={full}
-              className="relative bg-paper p-3 text-left pencil-cursor focus:outline-none disabled:opacity-40"
-              style={{
-                transform: `rotate(${i % 2 === 0 ? -1 : 1}deg)`,
-                boxShadow: picked
-                  ? `6px 8px 0 ${s.accent}66`
-                  : "4px 6px 0 rgba(26,26,26,0.10)",
-                transition: "box-shadow 0.3s",
-              }}
-            >
-              <RoughBox seed={30 + i} strokeColor="#1a1a1a" strokeWidth={1.4} />
-              <div className="aspect-[4/3] overflow-hidden">
-                {s.Component && <s.Component />}
-              </div>
-              <div className="mt-2 font-display text-xl">{s.title}</div>
-              <div className="font-hand text-xs text-ink/65">{s.pun}</div>
-              {picked && (
-                <div className="absolute -top-2 -right-2 bg-ink text-paper rounded-full w-7 h-7 flex items-center justify-center font-ui text-xs">
-                  {cardIds.indexOf(s.id) + 1}
-                </div>
-              )}
-            </button>
-          );
-        })}
+      <SwipeDeck
+        deck={deck}
+        full={full}
+        onSelect={handleSelect}
+        onSkip={handleSkip}
+      />
+
+      <div className="flex items-center justify-center gap-4 mt-6">
+        <button
+          type="button"
+          onClick={() => topCard && handleSkip(topCard)}
+          disabled={!topCard}
+          className="w-14 h-14 rounded-full border-2 border-ink/30 bg-paper text-ink hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed font-display text-2xl pencil-cursor"
+          aria-label="Skip this sketch"
+        >
+          ✕
+        </button>
+        {skippedIds.length > 0 && deck.length === 0 && !full && (
+          <button
+            type="button"
+            onClick={reshuffle}
+            className="font-ui text-sm border border-ink/25 px-4 py-2 rounded-full hover:bg-ink/5 pencil-cursor"
+          >
+            Reshuffle skipped ({skippedIds.length})
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => topCard && handleSelect(topCard)}
+          disabled={!topCard || full}
+          className="w-14 h-14 rounded-full border-2 border-sketchGreen bg-sketchGreen/15 text-ink hover:bg-sketchGreen/25 disabled:opacity-30 disabled:cursor-not-allowed font-display text-2xl pencil-cursor"
+          aria-label="Pick this sketch"
+        >
+          ♥
+        </button>
       </div>
+
+      <SelectedList
+        selected={selected}
+        count={count}
+        onMove={handleMove}
+        onRemove={handleRemove}
+      />
 
       <div className="flex justify-center mt-10">
         <button
           type="button"
           disabled={cardIds.length !== count}
           onClick={onContinue}
-          className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor transition-colors"
+          className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink disabled:opacity-30 disabled:cursor-not-allowed pencil-cursor"
         >
-          Conjure the story →
+          Compose the note book →
         </button>
       </div>
     </section>
+  );
+}
+
+function CategoryStrip({
+  active,
+  onPick,
+}: {
+  active: Category;
+  onPick: (c: Category) => void;
+}) {
+  const reduce = useReducedMotion();
+  // Render the list twice so the marquee can loop seamlessly.
+  const loop = [...categories, ...categories];
+
+  return (
+    <div
+      className="relative -mx-5 mb-6 overflow-hidden py-1 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+      aria-label="Sketch categories"
+    >
+      <motion.div
+        className="flex gap-2 w-max px-5"
+        animate={reduce ? undefined : { x: ["0%", "-50%"] }}
+        transition={
+          reduce
+            ? undefined
+            : { duration: 22, repeat: Infinity, ease: "linear" }
+        }
+      >
+        {loop.map((c, i) => {
+          const isActive = c === active;
+          return (
+            <button
+              key={`${c}-${i}`}
+              type="button"
+              onClick={() => onPick(c)}
+              className={`relative font-ui text-sm px-4 py-2 transition-colors pencil-cursor whitespace-nowrap ${
+                isActive
+                  ? "text-paper bg-ink"
+                  : "text-ink bg-paper hover:bg-ink/5"
+              }`}
+              style={{
+                borderRadius: "999px",
+                border: "1.5px solid #1a1a1a",
+                transform: isActive ? "rotate(-1deg)" : "rotate(0)",
+              }}
+            >
+              {c}
+            </button>
+          );
+        })}
+      </motion.div>
+    </div>
   );
 }

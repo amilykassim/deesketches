@@ -147,23 +147,6 @@ export function LandingDemo() {
           <p className="mt-4 sm:mt-5 font-hand text-base sm:text-lg text-ink/70">
             Watch a real card get made — for the one who pretends not to like cheesy things.
           </p>
-          <div className="mt-5 flex justify-center px-2">
-            <span
-              className="inline-flex flex-col sm:flex-row items-center gap-0.5 sm:gap-2 font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 text-center"
-              style={{
-                background: "#FBF7F0",
-                color: "#1a1a1a",
-                border: "1.5px solid #1a1a1a",
-                borderRadius: "999px",
-                transform: "rotate(1deg)",
-              }}
-            >
-              <span>⎙ Digital-drawn cards</span>
-              <span className="text-ink/50 normal-case tracking-normal font-hand">
-                — composed in the studio, sent in seconds
-              </span>
-            </span>
-          </div>
         </div>
 
         {/* Demo frame */}
