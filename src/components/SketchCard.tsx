@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useState } from "react";
 import { RoughBox } from "./RoughBox";
 import { Doodle } from "./Doodle";
@@ -55,12 +56,12 @@ export function SketchCard({ sketch, onPick, index }: Props) {
           className="h-full w-full"
         >
           {sketch.image ? (
-            <img
+            <Image
               src={sketch.image}
               alt={sketch.title}
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-contain"
+              fill
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 90vw"
+              className="object-contain"
             />
           ) : Inner ? (
             <Inner />

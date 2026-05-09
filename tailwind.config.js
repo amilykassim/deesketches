@@ -13,9 +13,9 @@ export default {
         sketchGreen: "#6FCF97",
       },
       fontFamily: {
-        display: ["Caveat", "cursive"],
-        hand: ["Kalam", "cursive"],
-        ui: ["'Patrick Hand'", "cursive"],
+        display: ["var(--font-display)", "Caveat", "cursive"],
+        hand: ["var(--font-hand)", "Kalam", "cursive"],
+        ui: ["var(--font-ui)", "'Patrick Hand'", "cursive"],
       },
       keyframes: {
         bob: {

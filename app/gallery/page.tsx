@@ -1,10 +1,4 @@
-"use client";
-
-import dynamic from "next/dynamic";
-
-const GalleryContent = dynamic(() => import("../_pages/GalleryContent"), {
-  ssr: false,
-});
+import GalleryContent from "../_pages/GalleryContent";
 
 export default function GalleryPage() {
   return <GalleryContent />;

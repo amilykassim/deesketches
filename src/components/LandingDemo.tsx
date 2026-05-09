@@ -7,6 +7,7 @@ import {
   useInView,
   useReducedMotion,
 } from "framer-motion";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { RoughBox } from "./RoughBox";
 import { RoughUnderline } from "./RoughUnderline";
@@ -430,13 +431,14 @@ function ScenePickSketches() {
             >
               <RoughBox seed={70 + i} strokeWidth={1.4} roughness={1.4} />
               <div className="relative h-full overflow-hidden bg-[#F4EFE4]">
-                <img
+                <Image
                   src={s.src}
                   alt=""
-                  className="h-full w-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="(min-width: 640px) 220px, 30vw"
+                  className="object-cover"
                 />
-                <span className="absolute -top-2 -left-2 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-ink text-paper font-ui text-[10px] sm:text-xs flex items-center justify-center">
+                <span className="absolute -top-2 -left-2 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-ink text-paper font-ui text-[10px] sm:text-xs flex items-center justify-center z-10">
                   {i + 1}
                 </span>
               </div>
@@ -691,16 +693,22 @@ function SceneOpenIt() {
                 <RoughBox seed={140} strokeWidth={1.4} />
                 <div className="relative h-full p-3">
                   <AnimatePresence mode="wait">
-                    <motion.img
+                    <motion.div
                       key={page.sketch}
-                      src={page.sketch}
-                      alt=""
-                      className="h-full w-full object-cover"
+                      className="relative h-full w-full"
                       initial={{ opacity: 0, scale: 1.04 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.4, delay: 0.25 }}
-                    />
+                    >
+                      <Image
+                        src={page.sketch}
+                        alt=""
+                        fill
+                        sizes="(min-width: 640px) 220px, 36vw"
+                        className="object-cover"
+                      />
+                    </motion.div>
                   </AnimatePresence>
                 </div>
               </div>

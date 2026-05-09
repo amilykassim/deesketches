@@ -2,14 +2,23 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { RoughUnderline } from "./RoughUnderline";
 
 type Props = {
   onCommission: () => void;
 };
 
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/compose", label: "Send a card" },
+  { href: "/read", label: "I have a key" },
+  { href: "/gallery", label: "Gallery" },
+];
+
 export function Navbar({ onCommission }: Props) {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -20,12 +29,9 @@ export function Navbar({ onCommission }: Props) {
 
   return (
     <header
-      className="fixed top-0 inset-x-0 z-30 transition-all duration-300"
-      style={{
-        background: scrolled ? "rgba(251,247,240,0.92)" : "transparent",
-        backdropFilter: scrolled ? "blur(6px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(26,26,26,0.08)" : "none",
-      }}
+      className={`nav-bar fixed top-0 inset-x-0 z-30 transition-all duration-300 ${
+        scrolled ? "nav-bar--scrolled" : ""
+      }`}
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 py-4">
         <Link href="/" className="relative inline-flex flex-col leading-none">
@@ -35,21 +41,23 @@ export function Navbar({ onCommission }: Props) {
           </div>
         </Link>
         <div className="hidden sm:flex items-center gap-7 font-ui text-ink/85">
-          <Link href="/" className="hover:text-sketchPink transition-colors">
-            Home
-          </Link>
-          <Link href="/compose" className="hover:text-sketchPink transition-colors">
-            Send a card
-          </Link>
-          <Link href="/read" className="hover:text-sketchPink transition-colors">
-            I have a key
-          </Link>
-          <Link href="/gallery" className="hover:text-sketchPink transition-colors">
-            Gallery
-          </Link>
-          <a href="/#contact" className="hover:text-sketchPink transition-colors">
+          {navLinks.map(({ href, label }) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`transition-colors ${
+                  active ? "text-sketchPink" : "hover:text-sketchPink"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+          <Link href="/#contact" className="hover:text-sketchPink transition-colors">
             Contact
-          </a>
+          </Link>
         </div>
         <button
           type="button"

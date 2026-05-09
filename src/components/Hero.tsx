@@ -7,6 +7,7 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Doodle } from "./Doodle";
 import { RoughBox } from "./RoughBox";
@@ -127,7 +128,6 @@ export function Hero({ onBrowse, onCommission }: Props) {
                     ? "text-ink"
                     : ""
                 }`}
-                style={{ willChange: "transform, filter, opacity" }}
               >
                 {word}
               </motion.span>
@@ -225,12 +225,13 @@ export function Hero({ onBrowse, onCommission }: Props) {
           >
             <RoughBox seed={9} strokeColor="#1a1a1a" strokeWidth={2} roughness={1.6} />
             <div className="relative aspect-[3/4] overflow-hidden">
-              <img
+              <Image
                 src="/sketches/best-tea.jpg"
                 alt="Best-tea — hand-drawn birthday card"
-                fetchPriority="high"
-                decoding="async"
-                className="h-full w-full object-cover"
+                fill
+                priority
+                sizes="(min-width: 1024px) 420px, (min-width: 640px) 60vw, 90vw"
+                className="object-cover"
               />
             </div>
             <div className="relative mt-2 px-2 flex justify-between items-baseline">

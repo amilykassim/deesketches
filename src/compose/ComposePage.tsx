@@ -1,3 +1,5 @@
+"use client";
+
 import { useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Category } from "../data/sketches";

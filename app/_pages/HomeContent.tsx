@@ -1,14 +1,30 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Hero } from "../../src/components/Hero";
-import { LandingDemo } from "../../src/components/LandingDemo";
 import { HowItWorks } from "../../src/components/HowItWorks";
-import { Story } from "../../src/components/Story";
-import { Testimonials } from "../../src/components/Testimonials";
 import { Contact } from "../../src/components/Contact";
 import { DrawnSquiggle } from "../../src/components/DrawnSquiggle";
 import { useContactModal } from "../shell";
+
+const SectionSkeleton = () => <div className="py-28" aria-hidden />;
+
+const LandingDemo = dynamic(
+  () => import("../../src/components/LandingDemo").then((m) => m.LandingDemo),
+  { loading: SectionSkeleton }
+);
+
+const Story = dynamic(
+  () => import("../../src/components/Story").then((m) => m.Story),
+  { loading: SectionSkeleton }
+);
+
+const Testimonials = dynamic(
+  () =>
+    import("../../src/components/Testimonials").then((m) => m.Testimonials),
+  { loading: SectionSkeleton }
+);
 
 export default function HomeContent() {
   const router = useRouter();

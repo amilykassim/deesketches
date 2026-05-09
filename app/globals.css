@@ -15,7 +15,7 @@ body {
   margin: 0;
   background-color: #fbf7f0;
   color: #1a1a1a;
-  font-family: "Kalam", cursive;
+  font-family: var(--font-hand), "Kalam", cursive;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -75,6 +75,18 @@ html {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   padding: 0 2px;
+}
+
+.nav-bar {
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+}
+.nav-bar--scrolled {
+  background: rgba(251, 247, 240, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom-color: rgba(26, 26, 26, 0.08);
 }
 
 ::-webkit-scrollbar {
