@@ -34,29 +34,27 @@ export async function POST(
     return NextResponse.json({ error: "Note not found or expired" }, { status: 404 });
   }
 
-  void (async () => {
-    try {
-      await db.insert(events).values({
-        type: "note_rejected",
-        bookId: note.id,
-        metadata: {
-          sender: note.sender,
-          recipient: note.recipient,
-          category: note.category,
-          rejectionReason: reason,
-        },
-      });
-    } catch (e) {
-      console.error("[notes.reject] event log failed", e);
-    }
-    if (note.email) {
-      void sendRejected({
-        to: note.email,
+  try {
+    await db.insert(events).values({
+      type: "note_rejected",
+      bookId: note.id,
+      metadata: {
+        sender: note.sender,
         recipient: note.recipient,
-        reason,
-      }).catch(() => {});
-    }
-  })();
+        category: note.category,
+        rejectionReason: reason,
+      },
+    });
+  } catch (e) {
+    console.error("[notes.reject] event log failed", e);
+  }
+  if (note.email) {
+    await sendRejected({
+      to: note.email,
+      recipient: note.recipient,
+      reason,
+    });
+  }
 
   return NextResponse.json({ ok: true, status: note.status });
 }

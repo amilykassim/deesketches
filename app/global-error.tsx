@@ -49,7 +49,7 @@ export default function GlobalError({
             The whole studio tipped over for a sec.
           </p>
           <p style={{ fontSize: 14, margin: "0 0 24px", color: "#1a1a1a99" }}>
-            Try a refresh — and if it sticks around, drop us a note.
+            Try a refresh. And if it sticks around, drop us a note.
           </p>
           <button
             type="button"

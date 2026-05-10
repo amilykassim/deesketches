@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { Payload } from "../../lib/payload";
 import { sketches } from "../../data/sketches";
 import { RoughBox } from "../../components/RoughBox";
@@ -11,6 +11,7 @@ import { CharCounter } from "../../components/CharCounter";
 import { useCharCount } from "../../lib/useCharCount";
 import { buildAdminWhatsAppLink } from "../../lib/whatsapp";
 import { StoryReader } from "../../read/StoryReader";
+import { ShareMenu } from "./ShareMenu";
 
 type Chapter = { title: string; body: string };
 
@@ -36,6 +37,15 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_MAX = 120;
 const MAX_KEY_RETRIES = 5;
 
+const CREATING_PHRASES = [
+  "Inking the pages…",
+  "Folding the corners…",
+  "Sealing the envelope…",
+  "Almost done…",
+];
+
+const PHRASE_INTERVAL_MS = 700;
+
 export function RevealStep({
   payload,
   secretKey,
@@ -51,9 +61,21 @@ export function RevealStep({
   const [email, setEmail] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [create, setCreate] = useState<CreateState>({ status: "idle" });
+  const [phraseIdx, setPhraseIdx] = useState(0);
   const emailCount = useCharCount(email, EMAIL_MAX);
+  const reduce = useReducedMotion();
 
   const emailValid = EMAIL_RE.test(email.trim());
+
+  // Cycle through playful phrases while the note is being saved.
+  useEffect(() => {
+    if (create.status !== "creating") return;
+    setPhraseIdx(0);
+    const id = setInterval(() => {
+      setPhraseIdx((i) => (i + 1) % CREATING_PHRASES.length);
+    }, PHRASE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [create.status]);
 
   const submitWithKey = async (
     keyToTry: string,
@@ -89,7 +111,7 @@ export function RevealStep({
       return;
     }
     const json = (await res.json()) as { id: string };
-    const url = `${window.location.origin}/read`;
+    const url = `${window.location.origin}/read?k=${encodeURIComponent(keyToTry)}`;
     setCreate({ status: "ready", url, noteId: json.id });
     setConfettiKey((k) => k + 1);
   };
@@ -183,7 +205,7 @@ export function RevealStep({
           autoComplete="email"
         />
         <p className="font-ui text-sm text-ink/60 mt-3 leading-snug">
-          Please make sure this is correct — we'll notify you when your payment
+          Please make sure this is correct. We'll notify you when your payment
           is approved <em>and</em> when your note has been opened by{" "}
           {payload.recipient || "the recipient"}.
         </p>
@@ -207,13 +229,30 @@ export function RevealStep({
           disabled={create.status === "creating"}
           className="font-ui bg-ink text-paper px-7 py-3 rounded-full hover:bg-sketchPink pencil-cursor disabled:opacity-50"
         >
-          {create.status === "creating" ? "Saving…" : "Create my note →"}
+          {create.status === "creating" ? (
+            <span aria-live="polite" className="relative inline-block min-w-[10ch]">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={phraseIdx}
+                  initial={reduce ? { opacity: 1 } : { opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduce ? { opacity: 1 } : { opacity: 0, y: -4 }}
+                  transition={reduce ? { duration: 0 } : { duration: 0.2 }}
+                  className="inline-block"
+                >
+                  {CREATING_PHRASES[phraseIdx]}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+          ) : (
+            "Create my note →"
+          )}
         </button>
       </div>
 
       <p className="font-hand text-sm text-ink/55 mt-8">
         Your note is delivered instantly and automatically disappears after
-        7 days — no accounts, no traces.
+        7 days. No accounts, no traces.
       </p>
     </section>
   );
@@ -334,13 +373,26 @@ function ReadyView({
           {url}
         </div>
         <div className="flex gap-3 justify-center mt-4 flex-wrap">
-          <button
+          <ShareMenu
+            url={url}
+            sender={sender}
+            recipient={recipient}
+            onCopy={onCopyLink}
+            copied={copiedLink}
+          />
+          <motion.button
             type="button"
             onClick={onCopyLink}
-            className="font-ui bg-ink text-paper px-5 py-2 rounded-full hover:bg-sketchPink pencil-cursor"
+            animate={copiedLink ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className={`font-ui px-5 py-2 rounded-full pencil-cursor transition-colors duration-300 border ${
+              copiedLink
+                ? "border-sketchGreen text-sketchGreen"
+                : "border-ink/30 hover:bg-ink/5"
+            }`}
           >
-            {copiedLink ? "✓ copied" : "Copy link"}
-          </button>
+            {copiedLink ? "✓ Copied" : "Copy link"}
+          </motion.button>
           <button
             type="button"
             onClick={() => setPreviewing(true)}
@@ -369,7 +421,7 @@ function ReadyView({
 
       <p className="font-hand text-sm text-ink/55 mt-10">
         Your note is delivered instantly and automatically disappears after
-        7 days — no accounts, no traces. Track its status anytime at{" "}
+        7 days. No accounts, no traces. Track its status anytime at{" "}
         <a href="/my-notes" className="underline underline-offset-4 hover:text-sketchPink">
           /my-notes
         </a>{" "}

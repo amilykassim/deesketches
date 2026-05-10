@@ -21,7 +21,7 @@ export function Contact() {
     }
     setError("");
     const text = encodeURIComponent(
-      `Hi! I'd love a sketch.\n\n${idea}\n\n— Sent from andiko.studio`
+      `Hi! I'd love a sketch.\n\n${idea}\n\nSent from andiko.studio`
     );
     window.open(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`,

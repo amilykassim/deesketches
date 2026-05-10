@@ -70,7 +70,7 @@ export function Testimonials() {
               {q.text}
             </blockquote>
             <figcaption className="relative mt-5 font-display text-2xl text-ink">
-              — {q.name}
+              {q.name}
               <span className="font-ui text-xs text-ink/50 ml-2 uppercase tracking-wider">
                 {q.where}
               </span>

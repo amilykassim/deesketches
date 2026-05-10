@@ -88,8 +88,12 @@ function DeckCard({
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 0, 220], [-12, 0, 12]);
-  const skipOpacity = useTransform(x, [-180, -40, 0], [1, 0.4, 0]);
-  const selectOpacity = useTransform(x, [0, 40, 180], [0, 0.4, 1]);
+  // Ramp stamp visibility early so the user sees the choice feedback within
+  // a few pixels of pulling, and let it scale up slightly as they commit.
+  const skipOpacity = useTransform(x, [-110, -20, 0], [1, 0.7, 0]);
+  const selectOpacity = useTransform(x, [0, 20, 110], [0, 0.7, 1]);
+  const skipScale = useTransform(x, [-180, -40, 0], [1.1, 1, 0.85]);
+  const selectScale = useTransform(x, [0, 40, 180], [0.85, 1, 1.1]);
   const [exiting, setExiting] = useState<null | "select" | "skip">(null);
   const draggedRef = useRef(false);
 
@@ -200,14 +204,28 @@ function DeckCard({
         {isTop && (
           <>
             <motion.div
-              style={{ opacity: skipOpacity }}
-              className="absolute top-6 right-6 z-20 font-ui text-base uppercase tracking-[0.2em] text-sketchPink border-2 border-sketchPink rounded-md px-3 py-1 -rotate-12"
+              style={{
+                opacity: skipOpacity,
+                scale: skipScale,
+                rotate: -14,
+                background: "#FF4D8D",
+                color: "#FBF7F0",
+                boxShadow: "0 6px 20px rgba(255,77,141,0.35)",
+              }}
+              className="absolute top-7 right-6 z-20 font-ui text-3xl font-bold uppercase tracking-[0.25em] px-5 py-2 rounded-lg border-[3px] border-[#FBF7F0] pointer-events-none select-none"
             >
               Skip
             </motion.div>
             <motion.div
-              style={{ opacity: selectOpacity }}
-              className="absolute top-6 left-6 z-20 font-ui text-base uppercase tracking-[0.2em] text-sketchGreen border-2 border-sketchGreen rounded-md px-3 py-1 rotate-12"
+              style={{
+                opacity: selectOpacity,
+                scale: selectScale,
+                rotate: 14,
+                background: "#6FCF97",
+                color: "#FBF7F0",
+                boxShadow: "0 6px 20px rgba(111,207,151,0.4)",
+              }}
+              className="absolute top-7 left-6 z-20 font-ui text-3xl font-bold uppercase tracking-[0.25em] px-5 py-2 rounded-lg border-[3px] border-[#FBF7F0] pointer-events-none select-none"
             >
               Pick
             </motion.div>

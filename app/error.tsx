@@ -10,7 +10,7 @@ const QUIPS = [
   "A doodle ran off with the page.",
   "The paper crumpled mid-sketch.",
   "The cat sat on the keyboard.",
-  "Chapter not found — the writer went for tea.",
+  "Chapter not found. The writer went for tea.",
 ];
 
 function pickQuip(seed: string): string {
@@ -49,7 +49,7 @@ export default function Error({
           <h1 className="font-display text-5xl mb-3">Oops.</h1>
           <p className="font-hand text-lg text-ink/75 mb-6">{quip}</p>
           <p className="font-ui text-sm text-ink/55 mb-8">
-            Nothing's broken on your end. We'll go fish it out — try again in a
+            Nothing's broken on your end. We'll go fish it out. Try again in a
             moment.
           </p>
           <div className="flex flex-wrap justify-center gap-3">

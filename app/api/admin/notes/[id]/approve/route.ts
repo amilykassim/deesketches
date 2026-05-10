@@ -31,29 +31,27 @@ export async function POST(
     return NextResponse.json({ error: "Note not found or expired" }, { status: 404 });
   }
 
-  void (async () => {
-    try {
-      await db.insert(events).values({
-        type: "note_approved",
-        bookId: note.id,
-        metadata: {
-          sender: note.sender,
-          recipient: note.recipient,
-          category: note.category,
-        },
-      });
-    } catch (e) {
-      console.error("[notes.approve] event log failed", e);
-    }
-    if (note.email) {
-      void sendApproved({
-        to: note.email,
+  try {
+    await db.insert(events).values({
+      type: "note_approved",
+      bookId: note.id,
+      metadata: {
+        sender: note.sender,
         recipient: note.recipient,
-        key: note.key,
-        origin: originFromReq(req),
-      }).catch(() => {});
-    }
-  })();
+        category: note.category,
+      },
+    });
+  } catch (e) {
+    console.error("[notes.approve] event log failed", e);
+  }
+  if (note.email) {
+    await sendApproved({
+      to: note.email,
+      recipient: note.recipient,
+      key: note.key,
+      origin: originFromReq(req),
+    });
+  }
 
   return NextResponse.json({ ok: true, status: note.status });
 }

@@ -145,7 +145,7 @@ export function LandingDemo() {
             .
           </h2>
           <p className="mt-4 sm:mt-5 font-hand text-base sm:text-lg text-ink/70">
-            Create a note book — chapter by chapter, just for them.
+            Create a note book, chapter by chapter, just for them.
           </p>
           <div className="mt-6 flex justify-center px-2">
             <span
@@ -160,7 +160,7 @@ export function LandingDemo() {
             >
               <span>⎙ Note books</span>
               <span className="text-ink/50 normal-case tracking-normal font-hand text-base sm:text-lg">
-                — composed in the studio, sent in seconds
+                composed in the studio, sent in seconds
               </span>
             </span>
           </div>
@@ -279,7 +279,7 @@ export function LandingDemo() {
 
           <p className="mt-3 text-center font-ui text-xs text-ink/50 px-4">
             {paused
-              ? "paused — tap or move away to keep watching"
+              ? "paused · tap or move away to keep watching"
               : "tap to pause · tap a dot to jump"}
           </p>
         </div>
@@ -745,7 +745,7 @@ function SceneOpenIt() {
                         {page.body}
                       </p>
                       <p className="mt-1.5 sm:mt-3 font-hand text-[9px] sm:text-[11px] md:text-xs text-ink/50 italic">
-                        — Yours, mostly
+                        Yours, mostly.
                       </p>
                     </div>
                     {/* Page corner curl hint */}

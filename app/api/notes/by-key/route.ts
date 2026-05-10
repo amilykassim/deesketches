@@ -36,24 +36,24 @@ export async function POST(req: Request) {
   // Approved: log open + fire email on first open.
   const isFirstOpen = await markOpenedOnce(note.id);
   if (isFirstOpen) {
-    void (async () => {
-      try {
-        await db.insert(events).values({
-          type: "book_opened",
-          bookId: note.id,
-          metadata: {
-            sender: note.sender,
-            recipient: note.recipient,
-            category: note.category,
-          },
-        });
-      } catch (e) {
-        console.error("[notes.by-key] event log failed", e);
-      }
-      if (note.email) {
-        void sendOpened({ to: note.email, recipient: note.recipient }).catch(() => {});
-      }
-    })();
+    try {
+      await db.insert(events).values({
+        type: "book_opened",
+        bookId: note.id,
+        metadata: {
+          sender: note.sender,
+          recipient: note.recipient,
+          category: note.category,
+        },
+      });
+    } catch (e) {
+      console.error("[notes.by-key] event log failed", e);
+    }
+    if (note.email) {
+      await sendOpened({ to: note.email, recipient: note.recipient }).catch(
+        () => {},
+      );
+    }
   }
 
   return NextResponse.json({

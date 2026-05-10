@@ -24,7 +24,12 @@
       "Bash(cat > *)",
       "Bash(ls /Users/amilykadyl/.claude/plans/ 2>/dev/null; echo \"---\"; ls /Users/amilykadyl/amily-projects/sketch-dee/app/admin/_components/)",
       "Read(//Users/amilykadyl/.claude/plans/**)",
-      "Bash(git -C /Users/amilykadyl/amily-projects/sketch-dee rm src/compose/steps/FormatStep.tsx src/compose/steps/AddressStep.tsx)"
+      "Bash(git -C /Users/amilykadyl/amily-projects/sketch-dee rm src/compose/steps/FormatStep.tsx src/compose/steps/AddressStep.tsx)",
+      "Bash(ps -p 22567 -o command=)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(ps -p 22567 -o lstart= -o args=)",
+      "Bash(curl -s -o /dev/null -w \"POST /api/test-email → HTTP %{http_code}\\\\n\" -X POST http://localhost:3000/api/test-email)",
+      "Bash(curl -s -X POST http://localhost:3000/api/test-email)"
     ],
     "additionalDirectories": [
       "/tmp"

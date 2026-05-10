@@ -350,7 +350,7 @@ export function NotesClient() {
 
       {cleanup.state === "done" && (
         <p className="font-hand text-ink/75">
-          Cleanup finished — {cleanup.deleted} expired note
+          Cleanup finished. {cleanup.deleted} expired note
           {cleanup.deleted === 1 ? "" : "s"} deleted.
         </p>
       )}

@@ -128,7 +128,7 @@ function ResultView({ result }: { result: Result }) {
   if (result.items.length === 0) {
     return (
       <p className="font-hand text-ink/70 mt-12 text-center">
-        No notes for this email — or they've already vanished after 7 days.
+        No notes for this email, or they've already vanished after 7 days.
       </p>
     );
   }

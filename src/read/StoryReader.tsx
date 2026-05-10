@@ -3,6 +3,7 @@ import HTMLFlipBook from "react-pageflip";
 import type { Sketch } from "../data/sketches";
 import { RoughBox } from "../components/RoughBox";
 import { Doodle } from "../components/Doodle";
+import { ConfettiBurst } from "../components/ConfettiBurst";
 import { GiftBackPrompt } from "./GiftBackPrompt";
 
 export type ReaderChapter = { title: string; body: string };
@@ -28,6 +29,7 @@ export function StoryReader({
   const bookRef = useRef<any>(null);
   const [page, setPage] = useState(0);
   const [showGiftBack, setShowGiftBack] = useState(false);
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
   const giftBackKey = bookId
     ? `tn_giftback_seen_${bookId}`
     : null;
@@ -83,6 +85,11 @@ export function StoryReader({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Splash burst the moment the reader mounts — they just unlocked the note.
+  useEffect(() => {
+    setConfettiTrigger((c) => c + 1);
+  }, []);
+
   // Detect reaching the final page (end-flourish) → fire book_completed once,
   // and trigger the gift-back prompt unless this reader has already seen it.
   useEffect(() => {
@@ -119,7 +126,8 @@ export function StoryReader({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center pt-24 pb-12 px-4">
+    <div className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 px-4">
+      <ConfettiBurst trigger={confettiTrigger} />
       <div className="relative w-full max-w-3xl aspect-[3/2]">
         <HTMLFlipBook
           ref={bookRef}
@@ -269,7 +277,7 @@ const Cover = forwardRef<
           with love, from {sender || "an old friend"}
         </div>
         <div className="font-ui text-xs uppercase tracking-wider text-ink/40">
-          key — {secretKey}
+          key · {secretKey}
         </div>
       </div>
     </BookPage>
@@ -351,7 +359,7 @@ const EndFlourish = forwardRef<
           <Doodle kind="star" color="#F6C667" size={28} drift={3.5} />
           <Doodle kind="swirl" color="#4A90E2" size={28} drift={3} />
         </div>
-        <div className="font-display text-5xl mb-4">— the end —</div>
+        <div className="font-display text-5xl mb-4">the end.</div>
         <p className="font-hand text-ink/75 max-w-md">
           {recipient ? `For you, ${recipient}.` : "For you."} Written, drawn,
           and sent {sender ? `by ${sender}` : "with love"}.

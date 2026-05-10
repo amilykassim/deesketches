@@ -13,6 +13,7 @@ import { Doodle } from "./Doodle";
 import { RoughBox } from "./RoughBox";
 import { MagneticButton } from "./MagneticButton";
 import { ConfettiBurst } from "./ConfettiBurst";
+import { RotatingText } from "./RotatingText";
 
 type Props = {
   onBrowse: () => void;
@@ -175,7 +176,14 @@ export function Hero({ onBrowse, onCommission }: Props) {
                   className="relative px-7 py-3.5 font-ui text-lg text-paper bg-ink pencil-cursor transition-shadow hover:shadow-[6px_8px_0_rgba(255,77,141,0.35)]"
                 >
                   <RoughBox seed={4} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
-                  <span className="relative">Get yours now for only 2000 Rwf!</span>
+                  <RotatingText
+                    className="relative"
+                    intervalMs={3000}
+                    messages={[
+                      "Paid for the hand-drawn? This one's a gift.",
+                      "Or Get yours now for only 2000 Rwf!",
+                    ]}
+                  />
                 </button>
               </div>
             </MagneticButton>
@@ -227,7 +235,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
             <div className="relative aspect-[3/4] overflow-hidden">
               <Image
                 src="/sketches/best-tea.jpg"
-                alt="Best-tea — hand-drawn birthday card"
+                alt="Best-tea, a hand-drawn birthday card"
                 fill
                 priority
                 sizes="(min-width: 1024px) 420px, (min-width: 640px) 60vw, 90vw"

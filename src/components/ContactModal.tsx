@@ -32,7 +32,7 @@ export function ContactModal({ open, sketch, onClose }: Props) {
     const title = sketch ? sketch.title : "a custom sketch";
     const subject = encodeURIComponent(`Sketch inquiry: ${title}`);
     const body = encodeURIComponent(
-      `Hi! I'd like to order "${title}".\n\nName: ${name}\nEmail: ${email}\n\nNote:\n${note}\n\n— Sent from andiko.studio`
+      `Hi! I'd like to order "${title}".\n\nName: ${name}\nEmail: ${email}\n\nNote:\n${note}\n\nSent from andiko.studio`
     );
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
   };

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { RoughUnderline } from "./RoughUnderline";
+// TEMP — remove when email testing is done.
+import { TempEmailTestButton } from "./TempEmailTestButton";
 
 const navLinks = [
   { href: "/compose", label: "Send a note book" },
@@ -70,6 +72,8 @@ export function Navbar() {
           })}
         </div>
         <div className="flex items-center gap-3">
+          {/* TEMP — remove when email testing is done. */}
+          <TempEmailTestButton />
           <Link
             href="/compose"
             className="hidden sm:inline-flex font-ui text-sm bg-ink text-paper px-4 py-2 rounded-full hover:bg-sketchPink transition-colors pencil-cursor"

@@ -7,7 +7,7 @@ const steps = [
   {
     n: "01",
     title: "Pick or describe",
-    body: "Browse the gallery — or tell me a story, a name, an inside joke.",
+    body: "Browse the gallery, or tell me a story, a name, an inside joke.",
     accent: "#FF4D8D",
   },
   {
@@ -51,7 +51,7 @@ export function HowItWorks() {
             >
               <span>✎ Hand-drawn notes</span>
               <span className="text-ink/50 normal-case tracking-normal font-hand text-base sm:text-lg">
-                — drawn on real paper, shipped to your door
+                drawn on real paper, shipped to your door
               </span>
             </span>
           </div>

@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { sketches } from "../data/sketches";
+import { isReaderKeyShape } from "../lib/key";
 import { KeyEntryStep } from "./KeyEntryStep";
 import { StoryReader, type ReaderChapter } from "./StoryReader";
 
@@ -17,7 +19,17 @@ type Note = {
   chapters: ReaderChapter[];
 };
 
-type Status = "idle" | "loading" | "approved" | "pending" | "expired";
+type Status =
+  | "idle"
+  | "loading"
+  | "unlocking"
+  | "approved"
+  | "pending"
+  | "expired";
+
+const UNLOCK_MIN_MS = 900;
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 function findSketch(id: string) {
   return sketches.find((s) => s.id === id);
@@ -32,6 +44,17 @@ export function ReadPage() {
   } | null>(null);
   const [unlockKey, setUnlockKey] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  // The shared-link key from `?k=…`, validated. KeyEntryStep magic-types it
+  // into the input and calls onUnlock when finished, which routes through
+  // the same submit() as the manual flow.
+  const autoKey = useMemo(() => {
+    const k = searchParams.get("k");
+    if (!k) return null;
+    const trimmed = k.trim();
+    return isReaderKeyShape(trimmed) ? trimmed : null;
+  }, [searchParams]);
 
   useEffect(() => {
     if (status !== "approved" || !note) return;
@@ -39,14 +62,17 @@ export function ReadPage() {
   }, [status, note]);
 
   const submit = async (k: string) => {
-    setStatus("loading");
+    setStatus("unlocking");
     setError(null);
     try {
-      const res = await fetch("/api/notes/by-key", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ k }),
-      });
+      const [res] = await Promise.all([
+        fetch("/api/notes/by-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ k }),
+        }),
+        sleep(UNLOCK_MIN_MS),
+      ]);
       if (!res.ok) {
         setError(`Server error (${res.status})`);
         setStatus("idle");
@@ -98,8 +124,8 @@ export function ReadPage() {
         <div className="max-w-xl mx-auto px-5 text-center">
           <h1 className="font-display text-5xl mb-3">Almost there.</h1>
           <p className="font-hand text-lg text-ink/75 mb-3">
-            {pendingInfo?.sender || "Someone"} sent you a note — but it's still
-            waiting for an admin to confirm payment.
+            {pendingInfo?.sender || "Someone"} sent you a note, but it's still
+            waiting for Andiko Studio to confirm payment.
           </p>
           <p className="font-hand text-base text-ink/65">
             Try again in a little while. We'll let {pendingInfo?.sender || "them"}{" "}
@@ -126,7 +152,7 @@ export function ReadPage() {
         <div className="max-w-xl mx-auto px-5 text-center">
           <h1 className="font-display text-5xl mb-3">This note has expired</h1>
           <p className="font-hand text-lg text-ink/75 mb-3">
-            Notes only live for 7 days, then they vanish — no accounts, no
+            Notes only live for 7 days, then they vanish. No accounts, no
             traces.
           </p>
           <p className="font-hand text-base text-ink/65">
@@ -146,12 +172,14 @@ export function ReadPage() {
   }
 
   return (
-    <main className="relative z-20 pt-28 pb-32 min-h-screen">
-      <div className="max-w-2xl mx-auto px-5">
+    <main className="relative z-20 pt-24 sm:pt-28 pb-24 sm:pb-32 min-h-screen">
+      <div className="max-w-2xl mx-auto px-4 sm:px-5">
         <KeyEntryStep
           loading={status === "loading"}
           serverError={error}
           onUnlock={submit}
+          autoTypeKey={autoKey}
+          unlocking={status === "unlocking"}
         />
       </div>
     </main>

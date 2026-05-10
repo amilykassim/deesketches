@@ -59,7 +59,7 @@ export function Story() {
           </p>
           <p className="font-hand text-xl text-ink/85 leading-relaxed">
             Now I draw <span className="ink-underline">tiny silly sketches</span>{" "}
-            full-time — the kind of cards that feel like a hug, not a transaction.
+            full-time. The kind of cards that feel like a hug, not a transaction.
             Every piece is hand-drawn on cotton paper, signed, and shipped in a
             doodled envelope.
           </p>

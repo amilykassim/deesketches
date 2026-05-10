@@ -45,7 +45,7 @@ function isChapterArray(v: unknown): v is Chapter[] {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const FRIENDLY_500 =
-  "The studio tipped over for a sec — please try again in a moment.";
+  "The studio tipped over for a sec. Please try again in a moment.";
 
 export async function POST(req: Request) {
   try {
@@ -135,19 +135,22 @@ async function handle(req: Request) {
     }
   })();
 
-  // Fire emails (best effort — don't block the response).
+  // Send emails before returning — on serverless, the function is suspended
+  // as soon as the response is sent, so fire-and-forget calls never complete.
   const url = new URL(req.url);
   const origin = `${url.protocol}//${url.host}`;
-  void sendReceived({ to: email.trim(), recipient }).catch(() => {});
-  void sendAdminNewNote({
-    noteId: result.id,
-    sender,
-    recipient,
-    email: email.trim(),
-    category,
-    chapters: body.chapters as Chapter[],
-    origin,
-  }).catch(() => {});
+  await Promise.allSettled([
+    sendReceived({ to: email.trim(), recipient }),
+    sendAdminNewNote({
+      noteId: result.id,
+      sender,
+      recipient,
+      email: email.trim(),
+      category,
+      chapters: body.chapters as Chapter[],
+      origin,
+    }),
+  ]);
 
   return NextResponse.json({ id: result.id }, { status: 201 });
 }

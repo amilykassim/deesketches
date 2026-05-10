@@ -26,7 +26,7 @@ const patrickHand = Patrick_Hand({
 
 export const metadata: Metadata = {
   title: "Andiko · tiny sketches, big feelings",
-  description: "Andiko — hand-drawn cards & doodles, made one at a time.",
+  description: "Andiko · hand-drawn cards & doodles, made one at a time.",
   icons: { icon: "/favicon.svg" },
 };
 

@@ -66,7 +66,7 @@ export function CardCountStep({ category, count, onPick, onBack }: Props) {
       </div>
       {max < 5 && (
         <p className="font-hand text-sm text-center text-ink/55 mt-6">
-          ({category} has {available} sketches today — capped at {max}.)
+          ({category} has {available} sketches today, capped at {max}.)
         </p>
       )}
     </section>
