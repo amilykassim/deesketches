@@ -21,7 +21,10 @@
       "Bash(node --env-file=.env scripts/drop-legacy-fks.cjs)",
       "Bash(git -C /Users/amilykadyl/amily-projects/sketch-dee mv app/lookup app/my-notes)",
       "Bash(pnpm exec *)",
-      "Bash(cat > *)"
+      "Bash(cat > *)",
+      "Bash(ls /Users/amilykadyl/.claude/plans/ 2>/dev/null; echo \"---\"; ls /Users/amilykadyl/amily-projects/sketch-dee/app/admin/_components/)",
+      "Read(//Users/amilykadyl/.claude/plans/**)",
+      "Bash(git -C /Users/amilykadyl/amily-projects/sketch-dee rm src/compose/steps/FormatStep.tsx src/compose/steps/AddressStep.tsx)"
     ],
     "additionalDirectories": [
       "/tmp"
