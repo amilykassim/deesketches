@@ -38,6 +38,23 @@ export function HowItWorks() {
           <h2 className="font-display text-5xl md:text-6xl text-ink leading-tight">
             Three steps. <span className="text-sketchPink">No robots.</span>
           </h2>
+          <div className="mt-6 flex justify-center px-2">
+            <span
+              className="inline-flex flex-col sm:flex-row items-center gap-1 sm:gap-3 font-ui text-sm sm:text-base uppercase tracking-[0.18em] px-5 py-2.5 text-center"
+              style={{
+                background: "#FBF7F0",
+                color: "#1a1a1a",
+                border: "1.5px solid #1a1a1a",
+                borderRadius: "999px",
+                transform: "rotate(-1deg)",
+              }}
+            >
+              <span>✎ Hand-drawn notes</span>
+              <span className="text-ink/50 normal-case tracking-normal font-hand text-base sm:text-lg">
+                — drawn on real paper, shipped to your door
+              </span>
+            </span>
+          </div>
         </div>
 
         <HowItWorksMobileStack steps={steps} />

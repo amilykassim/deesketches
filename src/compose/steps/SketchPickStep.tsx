@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import type { Category, Sketch } from "../../data/sketches";
 import { categories } from "../../data/sketches";
 import { SwipeDeck } from "../sketchPicker/SwipeDeck";
@@ -173,47 +172,33 @@ function CategoryStrip({
   active: Category;
   onPick: (c: Category) => void;
 }) {
-  const reduce = useReducedMotion();
-  // Render the list twice so the marquee can loop seamlessly.
-  const loop = [...categories, ...categories];
-
   return (
     <div
-      className="relative -mx-5 mb-6 overflow-hidden py-1 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+      className="flex flex-wrap gap-2 justify-center mb-6"
       aria-label="Sketch categories"
     >
-      <motion.div
-        className="flex gap-2 w-max px-5"
-        animate={reduce ? undefined : { x: ["0%", "-50%"] }}
-        transition={
-          reduce
-            ? undefined
-            : { duration: 22, repeat: Infinity, ease: "linear" }
-        }
-      >
-        {loop.map((c, i) => {
-          const isActive = c === active;
-          return (
-            <button
-              key={`${c}-${i}`}
-              type="button"
-              onClick={() => onPick(c)}
-              className={`relative font-ui text-sm px-4 py-2 transition-colors pencil-cursor whitespace-nowrap ${
-                isActive
-                  ? "text-paper bg-ink"
-                  : "text-ink bg-paper hover:bg-ink/5"
-              }`}
-              style={{
-                borderRadius: "999px",
-                border: "1.5px solid #1a1a1a",
-                transform: isActive ? "rotate(-1deg)" : "rotate(0)",
-              }}
-            >
-              {c}
-            </button>
-          );
-        })}
-      </motion.div>
+      {categories.map((c) => {
+        const isActive = c === active;
+        return (
+          <button
+            key={c}
+            type="button"
+            onClick={() => onPick(c)}
+            className={`relative font-ui text-sm px-4 py-2 transition-colors pencil-cursor whitespace-nowrap ${
+              isActive
+                ? "text-paper bg-ink"
+                : "text-ink bg-paper hover:bg-ink/5"
+            }`}
+            style={{
+              borderRadius: "999px",
+              border: "1.5px solid #1a1a1a",
+              transform: isActive ? "rotate(-1deg)" : "rotate(0)",
+            }}
+          >
+            {c}
+          </button>
+        );
+      })}
     </div>
   );
 }

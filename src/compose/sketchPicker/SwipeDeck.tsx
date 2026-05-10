@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   PanInfo,
+  animate,
   motion,
   useMotionValue,
   useTransform,
@@ -38,27 +39,33 @@ export function SwipeDeck({ deck, full, onSelect, onSkip }: Props) {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-sm h-[440px]">
-      <AnimatePresence initial={false}>
-        {deck
-          .slice(0, 3)
-          .reverse()
-          .map((sketch, depthFromBack) => {
-            const depthFromTop = Math.min(deck.length, 3) - 1 - depthFromBack;
-            const isTop = depthFromTop === 0;
-            return (
-              <DeckCard
-                key={sketch.id}
-                sketch={sketch}
-                depthFromTop={depthFromTop}
-                isTop={isTop}
-                full={full && isTop}
-                onSelect={() => onSelect(sketch)}
-                onSkip={() => onSkip(sketch)}
-              />
-            );
-          })}
-      </AnimatePresence>
+    <div className="relative mx-auto w-full max-w-sm">
+      <div className="relative h-[440px]">
+        <AnimatePresence initial={false}>
+          {deck
+            .slice(0, 3)
+            .reverse()
+            .map((sketch, depthFromBack) => {
+              const depthFromTop = Math.min(deck.length, 3) - 1 - depthFromBack;
+              const isTop = depthFromTop === 0;
+              return (
+                <DeckCard
+                  key={sketch.id}
+                  sketch={sketch}
+                  depthFromTop={depthFromTop}
+                  isTop={isTop}
+                  full={full && isTop}
+                  onSelect={() => onSelect(sketch)}
+                  onSkip={() => onSkip(sketch)}
+                />
+              );
+            })}
+        </AnimatePresence>
+      </div>
+      <p className="mt-4 text-center font-hand text-base text-ink/65">
+        <span aria-hidden="true">← swipe →</span>{" "}
+        <span>or tap a card to pick</span>
+      </p>
     </div>
   );
 }
@@ -84,15 +91,40 @@ function DeckCard({
   const skipOpacity = useTransform(x, [-180, -40, 0], [1, 0.4, 0]);
   const selectOpacity = useTransform(x, [0, 40, 180], [0, 0.4, 1]);
   const [exiting, setExiting] = useState<null | "select" | "skip">(null);
+  const draggedRef = useRef(false);
 
   const offsetY = depthFromTop * 10;
   const scale = 1 - depthFromTop * 0.04;
   const baseOpacity = 1 - depthFromTop * 0.12;
 
+  // One-shot wobble hint on the top card so users see it can be swiped.
+  useEffect(() => {
+    if (!isTop || reduce || exiting) return;
+    if (typeof window === "undefined") return;
+    if (window.sessionStorage.getItem("tn_swipedeck_hint")) return;
+    window.sessionStorage.setItem("tn_swipedeck_hint", "1");
+    const tween = animate(x, [0, 60, -40, 20, 0], {
+      duration: 1.1,
+      times: [0, 0.35, 0.65, 0.85, 1],
+      ease: "easeInOut",
+      delay: 0.3,
+    });
+    return () => tween.stop();
+  }, [isTop, reduce, exiting, x]);
+
+  const handleDragStart = () => {
+    draggedRef.current = true;
+  };
+
   const handleDragEnd = (_e: unknown, info: PanInfo) => {
     const passes =
       Math.abs(info.offset.x) > SWIPE_THRESHOLD ||
       Math.abs(info.velocity.x) > VELOCITY_THRESHOLD;
+    // Reset the "did drag" guard slightly later so the trailing onTap doesn't
+    // misfire as a click.
+    setTimeout(() => {
+      draggedRef.current = false;
+    }, 50);
     if (!passes) {
       x.set(0);
       return;
@@ -103,6 +135,12 @@ function DeckCard({
       return;
     }
     setExiting(direction);
+  };
+
+  const handleTap = () => {
+    if (!isTop || exiting || full) return;
+    if (draggedRef.current) return;
+    onSelect();
   };
 
   const onExitComplete = (which: "select" | "skip") => {
@@ -116,11 +154,14 @@ function DeckCard({
       drag={isTop && !exiting ? "x" : false}
       dragElastic={0.6}
       dragConstraints={{ left: 0, right: 0 }}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onTap={isTop ? handleTap : undefined}
       style={{
         x,
         rotate: isTop ? rotate : 0,
         zIndex: 10 - depthFromTop,
+        cursor: isTop && !full ? "pointer" : undefined,
       }}
       initial={
         reduce
@@ -147,6 +188,8 @@ function DeckCard({
       exit={{ opacity: 0 }}
       onAnimationComplete={() => exiting && onExitComplete(exiting)}
       className="absolute inset-0"
+      role={isTop ? "button" : undefined}
+      aria-label={isTop ? `Pick ${sketch.title}` : undefined}
     >
       <div
         className="relative w-full h-full bg-paper p-5"

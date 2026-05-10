@@ -6,7 +6,6 @@ import { Hero } from "../../src/components/Hero";
 import { HowItWorks } from "../../src/components/HowItWorks";
 import { Contact } from "../../src/components/Contact";
 import { DrawnSquiggle } from "../../src/components/DrawnSquiggle";
-import { useContactModal } from "../shell";
 
 const SectionSkeleton = () => <div className="py-28" aria-hidden />;
 
@@ -28,13 +27,12 @@ const Testimonials = dynamic(
 
 export default function HomeContent() {
   const router = useRouter();
-  const modal = useContactModal();
 
   return (
     <main className="relative z-20">
       <Hero
         onBrowse={() => router.push("/gallery")}
-        onCommission={() => modal.open(null)}
+        onCommission={() => router.push("/compose")}
       />
       <DrawnSquiggle color="#6FCF97" seed={4} className="max-w-4xl mx-auto" />
       <LandingDemo />

@@ -20,7 +20,11 @@
       "Bash(npm view *)",
       "Bash(node --env-file=.env scripts/drop-legacy-fks.cjs)",
       "Bash(git -C /Users/amilykadyl/amily-projects/sketch-dee mv app/lookup app/my-notes)",
-      "Bash(pnpm exec *)"
+      "Bash(pnpm exec *)",
+      "Bash(cat > *)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
     ]
   }
 }
