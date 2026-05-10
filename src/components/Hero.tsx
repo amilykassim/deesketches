@@ -175,7 +175,7 @@ export function Hero({ onBrowse, onCommission }: Props) {
                   className="relative px-7 py-3.5 font-ui text-lg text-paper bg-ink pencil-cursor transition-shadow hover:shadow-[6px_8px_0_rgba(255,77,141,0.35)]"
                 >
                   <RoughBox seed={4} strokeColor="#FF4D8D" strokeWidth={2} roughness={2} />
-                  <span className="relative">Get yours now for only 2K!</span>
+                  <span className="relative">Get yours now for only 2000 Rwf!</span>
                 </button>
               </div>
             </MagneticButton>

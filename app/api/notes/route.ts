@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, events } from "../../../src/lib/db";
 import { createNote } from "../../../src/lib/notes/repo";
-import { sendReceived } from "../../../src/lib/email";
+import { sendReceived, sendAdminNewNote } from "../../../src/lib/email";
 import { isValidKeyShape } from "../../../src/lib/key";
 
 export const runtime = "nodejs";
@@ -44,7 +44,19 @@ function isChapterArray(v: unknown): v is Chapter[] {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const FRIENDLY_500 =
+  "The studio tipped over for a sec — please try again in a moment.";
+
 export async function POST(req: Request) {
+  try {
+    return await handle(req);
+  } catch (e) {
+    console.error("[notes.create]", e);
+    return NextResponse.json({ error: FRIENDLY_500 }, { status: 500 });
+  }
+}
+
+async function handle(req: Request) {
   let body: Body;
   try {
     body = (await req.json()) as Body;
@@ -123,8 +135,19 @@ export async function POST(req: Request) {
     }
   })();
 
-  // Fire received email (best effort).
+  // Fire emails (best effort — don't block the response).
+  const url = new URL(req.url);
+  const origin = `${url.protocol}//${url.host}`;
   void sendReceived({ to: email.trim(), recipient }).catch(() => {});
+  void sendAdminNewNote({
+    noteId: result.id,
+    sender,
+    recipient,
+    email: email.trim(),
+    category,
+    chapters: body.chapters as Chapter[],
+    origin,
+  }).catch(() => {});
 
   return NextResponse.json({ id: result.id }, { status: 201 });
 }

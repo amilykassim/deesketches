@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { roughRectPath } from "../lib/rough";
 import { useIsMounted } from "../lib/use-is-mounted";

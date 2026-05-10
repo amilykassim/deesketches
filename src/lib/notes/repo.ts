@@ -167,6 +167,35 @@ export async function listPending(limit = 100): Promise<NoteRecord[]> {
   return listByStatus("pending", limit);
 }
 
+export async function listAll(opts?: {
+  page?: number;
+  pageSize?: number;
+}): Promise<{ items: NoteRecord[]; total: number }> {
+  const storage = getStorage();
+  const entries = await storage.list("notes");
+  if (entries.length === 0) return { items: [], total: 0 };
+
+  const notes = await Promise.all(
+    entries.map(async (entry) => {
+      const buf = await storage.get(entry.key);
+      const note = bufToJson<NoteRecord>(buf);
+      if (!note) return null;
+      if (note.createdAt + NOTE_TTL_MS < Date.now()) return null;
+      return note;
+    }),
+  );
+
+  const live = notes
+    .filter((n): n is NoteRecord => n !== null)
+    .sort((a, b) => b.createdAt - a.createdAt); // newest first
+
+  const total = live.length;
+  const page = Math.max(1, opts?.page ?? 1);
+  const pageSize = Math.max(1, Math.min(500, opts?.pageSize ?? 100));
+  const start = (page - 1) * pageSize;
+  return { items: live.slice(start, start + pageSize), total };
+}
+
 export async function listByStatus(
   status: NoteStatus,
   limit = 100,
@@ -261,4 +290,32 @@ async function cascadeDelete(note: NoteRecord): Promise<void> {
     storage.delete(keyPath(note.key)),
     storage.delete(emailIndexPath(note.email, note.createdAt, note.id)),
   ]);
+}
+
+export async function deleteNote(id: string): Promise<boolean> {
+  const note = await getNoteById(id);
+  if (!note) return false;
+  await cascadeDelete(note);
+  return true;
+}
+
+export async function deleteAllNotes(): Promise<{ deleted: number }> {
+  const storage = getStorage();
+  const entries = await storage.list("notes");
+  if (entries.length === 0) return { deleted: 0 };
+
+  let deleted = 0;
+  await Promise.all(
+    entries.map(async (entry) => {
+      const buf = await storage.get(entry.key);
+      const note = bufToJson<NoteRecord>(buf);
+      if (!note) {
+        await storage.delete(entry.key).catch(() => {});
+        return;
+      }
+      await cascadeDelete(note);
+      deleted += 1;
+    }),
+  );
+  return { deleted };
 }

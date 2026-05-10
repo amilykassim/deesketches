@@ -74,7 +74,7 @@ export function Navbar() {
             href="/compose"
             className="hidden sm:inline-flex font-ui text-sm bg-ink text-paper px-4 py-2 rounded-full hover:bg-sketchPink transition-colors pencil-cursor"
           >
-            Get one for only 2k RWF
+            Get one for only 2000 Rwf
           </Link>
           <button
             type="button"
@@ -119,7 +119,7 @@ export function Navbar() {
                 href="/compose"
                 className="mt-3 inline-flex items-center justify-center font-ui text-sm bg-ink text-paper px-4 py-3 rounded-full hover:bg-sketchPink transition-colors pencil-cursor"
               >
-                Get one for only 2k RWF
+                Get one for only 2000 Rwf
               </Link>
             </div>
           </motion.div>

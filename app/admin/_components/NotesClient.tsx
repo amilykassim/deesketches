@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Status = "pending" | "approved" | "rejected";
 
@@ -20,7 +20,10 @@ type AdminNote = {
   openedAt: number | null;
 };
 
-type Mutating = { id: string; kind: "approve" | "reject" } | null;
+type Mutating =
+  | { id: string; kind: "approve" | "reject" | "delete" }
+  | { kind: "delete-all" }
+  | null;
 
 type CleanupState =
   | { state: "idle" }
@@ -30,16 +33,36 @@ type CleanupState =
 
 type Toast = { kind: "success" | "error"; message: string } | null;
 
-const TABS: { id: Status; label: string }[] = [
+type LoadState =
+  | { state: "idle" }
+  | { state: "loading"; loaded: number; total: number | null }
+  | { state: "ready" }
+  | { state: "error"; message: string };
+
+type Tab = Status | "all";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "all", label: "All" },
   { id: "pending", label: "Pending" },
   { id: "approved", label: "Approved" },
   { id: "rejected", label: "Rejected" },
 ];
 
+const FETCH_PAGE_SIZE = 100;
+const VIEW_PAGE_SIZE = 5;
+
+type NotesPage = {
+  page: number;
+  pageSize: number;
+  total: number;
+  items: AdminNote[];
+};
+
 export function NotesClient() {
-  const [tab, setTab] = useState<Status>("pending");
-  const [items, setItems] = useState<AdminNote[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("all");
+  const [notes, setNotes] = useState<AdminNote[]>([]);
+  const [load, setLoad] = useState<LoadState>({ state: "idle" });
+  const [page, setPage] = useState(1);
   const [mutating, setMutating] = useState<Mutating>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -52,26 +75,80 @@ export function NotesClient() {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const refresh = async (status: Status = tab) => {
-    setError(null);
-    setItems(null);
+  const fetchAll = async () => {
+    setLoad({ state: "loading", loaded: 0, total: null });
     try {
-      const res = await fetch(`/api/admin/notes?status=${status}`);
-      if (!res.ok) {
-        setError(`Server error (${res.status})`);
-        return;
+      const all: AdminNote[] = [];
+      let p = 1;
+      let total = 0;
+      while (true) {
+        const res = await fetch(
+          `/api/admin/notes?page=${p}&pageSize=${FETCH_PAGE_SIZE}`,
+        );
+        if (!res.ok) {
+          setLoad({
+            state: "error",
+            message: `Server error (${res.status})`,
+          });
+          return;
+        }
+        const data = (await res.json()) as NotesPage;
+        all.push(...data.items);
+        total = data.total;
+        setLoad({ state: "loading", loaded: all.length, total });
+        if (all.length >= total || data.items.length === 0) break;
+        p += 1;
       }
-      const data = (await res.json()) as { items: AdminNote[] };
-      setItems(data.items);
+      setNotes(all);
+      setLoad({ state: "ready" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setLoad({
+        state: "error",
+        message: e instanceof Error ? e.message : "Network error",
+      });
     }
   };
 
   useEffect(() => {
-    void refresh(tab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void fetchAll();
+  }, []);
+
+  // Reset to page 1 whenever the active tab changes — the filtered list is
+  // a different length per status, so the previously-active page index is
+  // meaningless.
+  useEffect(() => {
+    setPage(1);
   }, [tab]);
+
+  const filtered = useMemo(
+    () => (tab === "all" ? notes : notes.filter((n) => n.status === tab)),
+    [notes, tab],
+  );
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / VIEW_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const visible = filtered.slice(
+    (safePage - 1) * VIEW_PAGE_SIZE,
+    safePage * VIEW_PAGE_SIZE,
+  );
+
+  const counts = useMemo(() => {
+    const c: Record<Tab, number> = {
+      all: notes.length,
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+    };
+    for (const n of notes) c[n.status] += 1;
+    return c;
+  }, [notes]);
+
+  const updateLocal = (id: string, patch: Partial<AdminNote>) => {
+    setNotes((curr) => curr.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+  };
+  const removeLocal = (id: string) => {
+    setNotes((curr) => curr.filter((n) => n.id !== id));
+  };
 
   const approve = async (id: string) => {
     setMutating({ id, kind: "approve" });
@@ -82,15 +159,103 @@ export function NotesClient() {
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         const message = j.error ?? `Server error (${res.status})`;
-        setError(message);
         setToast({ kind: "error", message: `Approval failed: ${message}` });
         return;
       }
-      setItems((curr) => (curr ? curr.filter((n) => n.id !== id) : curr));
+      updateLocal(id, { status: "approved" });
       setToast({ kind: "success", message: "Note approved." });
     } catch (e) {
       const message = e instanceof Error ? e.message : "Network error";
       setToast({ kind: "error", message: `Approval failed: ${message}` });
+    } finally {
+      setMutating(null);
+    }
+  };
+
+  const reject = async (id: string) => {
+    setMutating({ id, kind: "reject" });
+    try {
+      const res = await fetch(`/api/admin/notes/${id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reason.trim() || undefined }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        const message = j.error ?? `Server error (${res.status})`;
+        setToast({ kind: "error", message: `Rejection failed: ${message}` });
+        return;
+      }
+      updateLocal(id, {
+        status: "rejected",
+        rejectionReason: reason.trim() || null,
+      });
+      setRejectingId(null);
+      setReason("");
+      setToast({ kind: "success", message: "Note rejected." });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Network error";
+      setToast({ kind: "error", message: `Rejection failed: ${message}` });
+    } finally {
+      setMutating(null);
+    }
+  };
+
+  const deleteOne = async (id: string, sender: string, recipient: string) => {
+    if (
+      !window.confirm(
+        `Permanently delete the note from ${sender} → ${recipient}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setMutating({ id, kind: "delete" });
+    try {
+      const res = await fetch(`/api/admin/notes/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        const message = j.error ?? `Server error (${res.status})`;
+        setToast({ kind: "error", message: `Delete failed: ${message}` });
+        return;
+      }
+      removeLocal(id);
+      setToast({ kind: "success", message: "Note deleted." });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Network error";
+      setToast({ kind: "error", message: `Delete failed: ${message}` });
+    } finally {
+      setMutating(null);
+    }
+  };
+
+  const deleteAll = async () => {
+    if (
+      !window.confirm(
+        "Delete EVERY note (pending, approved, and rejected)? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    setMutating({ kind: "delete-all" });
+    try {
+      const res = await fetch("/api/admin/notes/delete-all", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        const message = j.error ?? `Server error (${res.status})`;
+        setToast({ kind: "error", message: `Delete-all failed: ${message}` });
+        return;
+      }
+      const data = (await res.json()) as { deleted: number };
+      setNotes([]);
+      setToast({
+        kind: "success",
+        message: `Deleted ${data.deleted} note${data.deleted === 1 ? "" : "s"}.`,
+      });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Network error";
+      setToast({ kind: "error", message: `Delete-all failed: ${message}` });
     } finally {
       setMutating(null);
     }
@@ -110,7 +275,7 @@ export function NotesClient() {
       }
       const data = (await res.json()) as { deleted: number };
       setCleanup({ state: "done", deleted: data.deleted });
-      void refresh();
+      void fetchAll();
     } catch (e) {
       setCleanup({
         state: "error",
@@ -119,34 +284,8 @@ export function NotesClient() {
     }
   };
 
-  const reject = async (id: string) => {
-    setMutating({ id, kind: "reject" });
-    try {
-      const res = await fetch(`/api/admin/notes/${id}/reject`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: reason.trim() || undefined }),
-      });
-      if (!res.ok) {
-        const j = (await res.json().catch(() => ({}))) as { error?: string };
-        const message = j.error ?? `Server error (${res.status})`;
-        setError(message);
-        setToast({ kind: "error", message: `Rejection failed: ${message}` });
-        return;
-      }
-      setItems((curr) => (curr ? curr.filter((n) => n.id !== id) : curr));
-      setRejectingId(null);
-      setReason("");
-      setToast({ kind: "success", message: "Note rejected." });
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Network error";
-      setToast({ kind: "error", message: `Rejection failed: ${message}` });
-    } finally {
-      setMutating(null);
-    }
-  };
-
-  const emptyMessage = {
+  const emptyMessage: string = {
+    all: "No notes yet.",
     pending: "Nothing waiting. ✓",
     approved: "No approved notes yet.",
     rejected: "No rejected notes.",
@@ -168,18 +307,25 @@ export function NotesClient() {
           </button>
           <button
             type="button"
-            onClick={() => refresh()}
-            className="font-ui text-sm border border-ink/20 px-3 py-1 rounded-full hover:bg-ink/5"
+            onClick={() => fetchAll()}
+            disabled={load.state === "loading"}
+            className="font-ui text-sm border border-ink/20 px-3 py-1 rounded-full hover:bg-ink/5 disabled:opacity-50"
           >
-            Refresh
+            {load.state === "loading" ? "Refreshing…" : "Refresh"}
+          </button>
+          <button
+            type="button"
+            onClick={deleteAll}
+            disabled={mutating?.kind === "delete-all"}
+            className="font-ui text-sm border border-sketchPink text-sketchPink px-3 py-1 rounded-full hover:bg-sketchPink hover:text-paper disabled:opacity-50"
+            title="Permanently delete every note in storage."
+          >
+            {mutating?.kind === "delete-all" ? "Deleting…" : "Delete all"}
           </button>
         </div>
       </header>
 
-      <div
-        role="tablist"
-        className="flex gap-1 border-b border-ink/10"
-      >
+      <div role="tablist" className="flex gap-1 border-b border-ink/10">
         {TABS.map((t) => {
           const active = t.id === tab;
           return (
@@ -195,7 +341,8 @@ export function NotesClient() {
                   : "border-transparent text-ink/55 hover:text-ink"
               }`}
             >
-              {t.label}
+              {t.label}{" "}
+              <span className="text-ink/40">({counts[t.id]})</span>
             </button>
           );
         })}
@@ -208,20 +355,29 @@ export function NotesClient() {
         </p>
       )}
       {cleanup.state === "error" && (
-        <p className="font-hand text-sketchPink">Cleanup failed: {cleanup.message}</p>
+        <p className="font-hand text-sketchPink">
+          Cleanup failed: {cleanup.message}
+        </p>
       )}
-      {error && <p className="font-hand text-sketchPink">{error}</p>}
-
-      {items === null && !error && (
-        <p className="font-hand text-ink/55">Loading…</p>
+      {load.state === "error" && (
+        <p className="font-hand text-sketchPink">
+          Couldn't load notes: {load.message}
+        </p>
       )}
 
-      {items !== null && items.length === 0 && (
+      {load.state === "loading" && notes.length === 0 && (
+        <p className="font-hand text-ink/55">
+          Loading
+          {load.total !== null ? ` ${load.loaded} / ${load.total}` : "…"}
+        </p>
+      )}
+
+      {load.state === "ready" && filtered.length === 0 && (
         <p className="font-hand text-ink/55">{emptyMessage}</p>
       )}
 
       <ul className="space-y-4">
-        {items?.map((n) => (
+        {visible.map((n) => (
           <li
             key={n.id}
             className="bg-paper border border-ink/10 rounded-sm p-5"
@@ -268,35 +424,47 @@ export function NotesClient() {
                   </div>
                 </details>
               </div>
-              {tab === "pending" && (
-                <div className="flex flex-col items-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => approve(n.id)}
-                    disabled={mutating?.id === n.id}
-                    className="font-ui bg-ink text-paper px-4 py-1.5 rounded-full hover:bg-sketchGreen disabled:opacity-50"
-                  >
-                    {mutating?.id === n.id && mutating.kind === "approve"
-                      ? "Approving…"
-                      : "Approve"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setRejectingId(rejectingId === n.id ? null : n.id)
-                    }
-                    className="font-ui text-sm text-sketchPink hover:underline"
-                  >
-                    {rejectingId === n.id ? "Cancel" : "Reject"}
-                  </button>
-                </div>
-              )}
-              {tab !== "pending" && (
-                <StatusBadge status={n.status} />
-              )}
+              <div className="flex flex-col items-end gap-2">
+                {n.status === "pending" ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => approve(n.id)}
+                      disabled={!!(mutating && "id" in mutating && mutating.id === n.id)}
+                      className="font-ui bg-ink text-paper px-4 py-1.5 rounded-full hover:bg-sketchGreen disabled:opacity-50"
+                    >
+                      {mutating && "id" in mutating && mutating.id === n.id && mutating.kind === "approve"
+                        ? "Approving…"
+                        : "Approve"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRejectingId(rejectingId === n.id ? null : n.id)
+                      }
+                      className="font-ui text-sm text-sketchPink hover:underline"
+                    >
+                      {rejectingId === n.id ? "Cancel" : "Reject"}
+                    </button>
+                  </>
+                ) : (
+                  <StatusBadge status={n.status} />
+                )}
+                <button
+                  type="button"
+                  onClick={() => deleteOne(n.id, n.sender, n.recipient)}
+                  disabled={!!(mutating && "id" in mutating && mutating.id === n.id)}
+                  className="font-ui text-xs text-ink/55 hover:text-sketchPink disabled:opacity-50"
+                  title="Permanently delete this note"
+                >
+                  {mutating && "id" in mutating && mutating.id === n.id && mutating.kind === "delete"
+                    ? "Deleting…"
+                    : "Delete"}
+                </button>
+              </div>
             </div>
 
-            {tab === "pending" && rejectingId === n.id && (
+            {n.status === "pending" && rejectingId === n.id && (
               <div className="mt-4 pt-4 border-t border-ink/10">
                 <label className="block font-ui text-xs uppercase tracking-wider text-ink/55 mb-1">
                   Reason (optional, sent to sender)
@@ -313,10 +481,10 @@ export function NotesClient() {
                   <button
                     type="button"
                     onClick={() => reject(n.id)}
-                    disabled={mutating?.id === n.id}
+                    disabled={!!(mutating && "id" in mutating && mutating.id === n.id)}
                     className="font-ui bg-sketchPink text-paper px-4 py-1.5 rounded-full disabled:opacity-50"
                   >
-                    {mutating?.id === n.id && mutating.kind === "reject"
+                    {mutating && "id" in mutating && mutating.id === n.id && mutating.kind === "reject"
                       ? "Rejecting…"
                       : "Confirm reject"}
                   </button>
@@ -326,6 +494,37 @@ export function NotesClient() {
           </li>
         ))}
       </ul>
+
+      {pageCount > 1 && filtered.length > 0 && (
+        <nav
+          className="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-ink/10"
+          aria-label="Notes pagination"
+        >
+          <span className="font-ui text-xs text-ink/55">
+            Page {safePage} of {pageCount} · {filtered.length}
+            {tab === "all" ? "" : ` ${tab}`} note
+            {filtered.length === 1 ? "" : "s"}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(1, safePage - 1))}
+              disabled={safePage === 1}
+              className="font-ui text-sm border border-ink/20 px-3 py-1 rounded-full hover:bg-ink/5 disabled:opacity-30"
+            >
+              ← prev
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(pageCount, safePage + 1))}
+              disabled={safePage === pageCount}
+              className="font-ui text-sm border border-ink/20 px-3 py-1 rounded-full hover:bg-ink/5 disabled:opacity-30"
+            >
+              next →
+            </button>
+          </div>
+        </nav>
+      )}
 
       {toast && (
         <div

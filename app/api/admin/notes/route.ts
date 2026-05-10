@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listByStatus, NoteStatus } from "../../../../src/lib/notes/repo";
+import { listAll } from "../../../../src/lib/notes/repo";
 import {
   AdminAuthError,
   requireAdmin,
@@ -7,8 +7,6 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const VALID_STATUSES: NoteStatus[] = ["pending", "approved", "rejected"];
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,14 +16,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     throw e;
   }
-  const statusParam = req.nextUrl.searchParams.get("status");
-  const status: NoteStatus =
-    statusParam && (VALID_STATUSES as string[]).includes(statusParam)
-      ? (statusParam as NoteStatus)
-      : "pending";
-  const notes = await listByStatus(status, 100);
+  const url = req.nextUrl;
+  const page = parseInt(url.searchParams.get("page") ?? "1", 10) || 1;
+  const pageSize =
+    parseInt(url.searchParams.get("pageSize") ?? "100", 10) || 100;
+  const { items, total } = await listAll({ page, pageSize });
   return NextResponse.json({
-    items: notes.map((n) => ({
+    page,
+    pageSize,
+    total,
+    items: items.map((n) => ({
       id: n.id,
       sender: n.sender,
       recipient: n.recipient,

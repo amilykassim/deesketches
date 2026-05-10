@@ -103,6 +103,51 @@ ${args.reason ? `<p><em>${escape(args.reason)}</em></p>` : ""}
   });
 }
 
+export async function sendAdminNewNote(args: {
+  noteId: string;
+  sender: string;
+  recipient: string;
+  email: string;
+  category: string;
+  chapters: { title: string; body: string }[];
+  origin: string;
+}): Promise<void> {
+  const to = process.env.ADMIN_EMAIL;
+  if (!to) {
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[email] no ADMIN_EMAIL — skipping admin notification");
+    }
+    return;
+  }
+  const chapterPreview = args.chapters
+    .map(
+      (c, i) => `
+<div style="border-left: 2px solid #1a1a1a18; padding-left: 12px; margin: 12px 0;">
+<div style="font-weight: 600;">${i + 1}. ${escape(c.title || "(untitled)")}</div>
+<p style="margin: 4px 0 0; white-space: pre-wrap;">${escape(c.body)}</p>
+</div>`,
+    )
+    .join("");
+
+  await send({
+    to,
+    subject: `New note awaiting approval — ${args.sender} → ${args.recipient}`,
+    html: wrap(`
+<h2 style="margin-top: 0;">A new note needs your eyes</h2>
+<p><strong>${escape(args.sender)}</strong> just sent a note for <strong>${escape(args.recipient)}</strong>.</p>
+<p style="font-size: 13px; color: #1a1a1a99;">
+Category: ${escape(args.category)}<br>
+Sender email: ${escape(args.email)}<br>
+Chapters: ${args.chapters.length}
+</p>
+${chapterPreview}
+<p style="margin-top: 20px;">
+<a href="${args.origin}/admin/notes" style="display: inline-block; background: #1a1a1a; color: #fbf7f0; padding: 10px 18px; border-radius: 999px; text-decoration: none;">Review on the admin dashboard →</a>
+</p>
+`),
+  });
+}
+
 export async function sendOpened(args: {
   to: string;
   recipient: string;
