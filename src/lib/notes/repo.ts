@@ -94,7 +94,7 @@ export async function createNote(input: {
   const now = Date.now();
   const note: NoteRecord = {
     id,
-    status: "pending",
+    status: "approved",
     key: input.key,
     format: input.format,
     category: input.category,

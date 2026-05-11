@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, events } from "../../../src/lib/db";
 import { createNote } from "../../../src/lib/notes/repo";
-import { sendReceived, sendAdminNewNote } from "../../../src/lib/email";
+import { sendApproved } from "../../../src/lib/email";
 import { isValidKeyShape } from "../../../src/lib/key";
 
 export const runtime = "nodejs";
@@ -120,6 +120,11 @@ async function handle(req: Request) {
           bookId: result.id,
           metadata: { storySource, category, sender, recipient, hasEmail: true },
         },
+        {
+          type: "note_approved",
+          bookId: result.id,
+          metadata: { sender, recipient, category },
+        },
         ...(storySource === "magic_writer"
           ? [
               {
@@ -135,22 +140,18 @@ async function handle(req: Request) {
     }
   })();
 
-  // Send emails before returning — on serverless, the function is suspended
+  // Send email before returning — on serverless, the function is suspended
   // as soon as the response is sent, so fire-and-forget calls never complete.
   const url = new URL(req.url);
   const origin = `${url.protocol}//${url.host}`;
-  await Promise.allSettled([
-    sendReceived({ to: email.trim(), recipient }),
-    sendAdminNewNote({
-      noteId: result.id,
-      sender,
-      recipient,
-      email: email.trim(),
-      category,
-      chapters: body.chapters as Chapter[],
-      origin,
-    }),
-  ]);
+  await sendApproved({
+    to: email.trim(),
+    recipient,
+    key: k.trim(),
+    origin,
+  }).catch((e) => {
+    console.error("[notes.create] sendApproved failed", e);
+  });
 
   return NextResponse.json({ id: result.id }, { status: 201 });
 }
