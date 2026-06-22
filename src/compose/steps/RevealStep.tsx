@@ -7,8 +7,6 @@ import { sketches } from "../../data/sketches";
 import { RoughBox } from "../../components/RoughBox";
 import { Doodle } from "../../components/Doodle";
 import { ConfettiBurst } from "../../components/ConfettiBurst";
-import { CharCounter } from "../../components/CharCounter";
-import { useCharCount } from "../../lib/useCharCount";
 import { buildAdminWhatsAppLink } from "../../lib/whatsapp";
 import { StoryReader } from "../../read/StoryReader";
 import { ShareMenu } from "./ShareMenu";
@@ -33,8 +31,6 @@ type CreateState =
   | { status: "ready"; url: string; noteId: string }
   | { status: "error"; message: string };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const EMAIL_MAX = 120;
 const MAX_KEY_RETRIES = 5;
 
 const CREATING_PHRASES = [
@@ -58,14 +54,9 @@ export function RevealStep({
   const [confettiKey, setConfettiKey] = useState(0);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [email, setEmail] = useState("");
-  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [create, setCreate] = useState<CreateState>({ status: "idle" });
   const [phraseIdx, setPhraseIdx] = useState(0);
-  const emailCount = useCharCount(email, EMAIL_MAX);
   const reduce = useReducedMotion();
-
-  const emailValid = EMAIL_RE.test(email.trim());
 
   // Cycle through playful phrases while the note is being saved.
   useEffect(() => {
@@ -91,7 +82,6 @@ export function RevealStep({
         cardIds: payload.cardIds,
         sender: payload.sender,
         recipient: payload.recipient,
-        email: email.trim(),
         storySource,
         storyArcId: arcId,
         chapters,
@@ -111,14 +101,12 @@ export function RevealStep({
       return;
     }
     const json = (await res.json()) as { id: string };
-    const url = `${window.location.origin}/read?k=${encodeURIComponent(keyToTry)}`;
+    const url = `${window.location.origin}/r/${encodeURIComponent(keyToTry)}`;
     setCreate({ status: "ready", url, noteId: json.id });
     setConfettiKey((k) => k + 1);
   };
 
   const submit = async () => {
-    setSubmitAttempted(true);
-    if (!emailValid) return;
     setCreate({ status: "creating" });
     try {
       await submitWithKey(secretKey, 0);
@@ -179,43 +167,12 @@ export function RevealStep({
         <Doodle kind="heart" color="#FF4D8D" size={24} drift={4} />
         <Doodle kind="spark" color="#4A90E2" size={24} drift={3} />
       </div>
-      <h1 className="font-display text-5xl mb-3">One last thing.</h1>
+      <h1 className="font-display text-5xl mb-3">Ready when you are.</h1>
       <p className="font-hand text-lg text-ink/70 mb-8">
-        Where should we notify you when{" "}
-        {payload.recipient || "the recipient"} has opened your note book?
+        We'll wrap up your note book and hand you a private link to share with{" "}
+        {payload.recipient || "the recipient"}.
       </p>
 
-      <label className="block relative bg-paper p-5 mx-auto text-left">
-        <RoughBox seed={111} strokeWidth={1.4} />
-        <div className="flex items-baseline justify-between mb-2">
-          <span className="font-ui text-xs uppercase tracking-wider text-ink/55">
-            Your email
-          </span>
-          <CharCounter state={emailCount} />
-        </div>
-        <input
-          type="email"
-          value={email}
-          autoFocus
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="you@example.com"
-          maxLength={EMAIL_MAX}
-          className="w-full bg-transparent font-hand text-2xl text-ink placeholder-ink/30 focus:outline-none"
-          autoComplete="email"
-        />
-        <p className="font-ui text-sm text-ink/60 mt-3 leading-snug">
-          Please make sure this is correct. We'll notify you when your payment
-          is approved <em>and</em> when your note has been opened by{" "}
-          {payload.recipient || "the recipient"}.
-        </p>
-      </label>
-
-      {submitAttempted && !emailValid && (
-        <p className="font-hand text-sketchPink mt-4">
-          That email doesn't look right. Double-check it?
-        </p>
-      )}
       {create.status === "error" && (
         <div className="mt-6 bg-paper border border-sketchPink/40 px-4 py-3 rounded-sm font-hand text-sketchPink">
           Couldn't save: {create.message}
@@ -414,18 +371,14 @@ function ReadyView({
             Want faster approval? Send your payment confirmation to admin on WhatsApp →
           </a>
           <p className="font-hand text-sm text-ink/55 mt-3">
-            (Otherwise we'll review at our usual pace and email you the moment it's live.)
+            (Otherwise we'll review at our usual pace and pop it live for you.)
           </p>
         </div>
       )}
 
       <p className="font-hand text-sm text-ink/55 mt-10">
         Your note is delivered instantly and automatically disappears after
-        7 days. No accounts, no traces. Track its status anytime at{" "}
-        <a href="/my-notes" className="underline underline-offset-4 hover:text-sketchPink">
-          /my-notes
-        </a>{" "}
-        with the email above.
+        7 days. No accounts, no traces.
       </p>
     </section>
   );

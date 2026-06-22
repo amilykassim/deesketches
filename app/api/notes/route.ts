@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db, events } from "../../../src/lib/db";
 import { createNote } from "../../../src/lib/notes/repo";
-import { sendApproved } from "../../../src/lib/email";
 import { isValidKeyShape } from "../../../src/lib/key";
 
 export const runtime = "nodejs";
@@ -16,7 +15,6 @@ type Body = {
   cardIds?: unknown;
   sender?: unknown;
   recipient?: unknown;
-  email?: unknown;
   storySource?: unknown;
   storyArcId?: unknown;
   chapters?: unknown;
@@ -42,8 +40,6 @@ function isChapterArray(v: unknown): v is Chapter[] {
   );
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 const FRIENDLY_500 =
   "The studio tipped over for a sec. Please try again in a moment.";
 
@@ -64,7 +60,7 @@ async function handle(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { k, format, category, sender, recipient, email, storySource, storyArcId } = body;
+  const { k, format, category, sender, recipient, storySource, storyArcId } = body;
 
   if (typeof k !== "string" || !isValidKeyShape(k)) {
     return NextResponse.json({ error: "Invalid key" }, { status: 400 });
@@ -80,9 +76,6 @@ async function handle(req: Request) {
   }
   if (typeof sender !== "string" || typeof recipient !== "string") {
     return NextResponse.json({ error: "Invalid sender/recipient" }, { status: 400 });
-  }
-  if (typeof email !== "string" || !EMAIL_RE.test(email.trim())) {
-    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
   if (typeof storySource !== "string" || !VALID_SOURCES.has(storySource)) {
     return NextResponse.json({ error: "Invalid storySource" }, { status: 400 });
@@ -101,7 +94,6 @@ async function handle(req: Request) {
     cardIds: body.cardIds as string[],
     sender,
     recipient,
-    email: email.trim(),
     storySource: storySource as "self" | "magic_writer",
     storyArcId: (storyArcId as string | undefined) ?? null,
     chapters: body.chapters as Chapter[],
@@ -118,7 +110,7 @@ async function handle(req: Request) {
         {
           type: "book_created",
           bookId: result.id,
-          metadata: { storySource, category, sender, recipient, hasEmail: true },
+          metadata: { storySource, category, sender, recipient },
         },
         {
           type: "note_approved",
@@ -139,19 +131,6 @@ async function handle(req: Request) {
       console.error("[notes.create] event log failed", e);
     }
   })();
-
-  // Send email before returning — on serverless, the function is suspended
-  // as soon as the response is sent, so fire-and-forget calls never complete.
-  const url = new URL(req.url);
-  const origin = `${url.protocol}//${url.host}`;
-  await sendApproved({
-    to: email.trim(),
-    recipient,
-    key: k.trim(),
-    origin,
-  }).catch((e) => {
-    console.error("[notes.create] sendApproved failed", e);
-  });
 
   return NextResponse.json({ id: result.id }, { status: 201 });
 }

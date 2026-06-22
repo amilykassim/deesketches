@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       id: n.id,
       sender: n.sender,
       recipient: n.recipient,
-      email: n.email,
+      email: n.email ?? "",
       category: n.category,
       format: n.format,
       cardIds: n.cardIds,

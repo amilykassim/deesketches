@@ -196,7 +196,6 @@ export function shouldShowWelcomeModal(pathname: string): boolean {
   if (typeof window === "undefined") return false;
   if (pathname.startsWith("/read")) return false;
   if (pathname.startsWith("/admin")) return false;
-  if (pathname.startsWith("/my-notes")) return false;
   try {
     return window.localStorage.getItem(STORAGE_KEY) !== "1";
   } catch {

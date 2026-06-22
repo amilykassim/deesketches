@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db, events } from "../../../../../../src/lib/db";
 import { setStatus } from "../../../../../../src/lib/notes/repo";
-import { sendRejected } from "../../../../../../src/lib/email";
 import {
   AdminAuthError,
   requireAdmin,
@@ -47,13 +46,6 @@ export async function POST(
     });
   } catch (e) {
     console.error("[notes.reject] event log failed", e);
-  }
-  if (note.email) {
-    await sendRejected({
-      to: note.email,
-      recipient: note.recipient,
-      reason,
-    });
   }
 
   return NextResponse.json({ ok: true, status: note.status });

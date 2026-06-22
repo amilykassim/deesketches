@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db, events } from "../../../../src/lib/db";
 import { getNoteByKey, markOpenedOnce } from "../../../../src/lib/notes/repo";
-import { sendOpened } from "../../../../src/lib/email";
 import { isReaderKeyShape } from "../../../../src/lib/key";
 
 export const runtime = "nodejs";
@@ -33,7 +32,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ status: "not_found" });
   }
 
-  // Approved: log open + fire email on first open.
+  // Approved: log the first open.
   const isFirstOpen = await markOpenedOnce(note.id);
   if (isFirstOpen) {
     try {
@@ -48,11 +47,6 @@ export async function POST(req: Request) {
       });
     } catch (e) {
       console.error("[notes.by-key] event log failed", e);
-    }
-    if (note.email) {
-      await sendOpened({ to: note.email, recipient: note.recipient }).catch(
-        () => {},
-      );
     }
   }
 

@@ -35,7 +35,7 @@ function findSketch(id: string) {
   return sketches.find((s) => s.id === id);
 }
 
-export function ReadPage() {
+export function ReadPage({ initialKey }: { initialKey?: string } = {}) {
   const [status, setStatus] = useState<Status>("idle");
   const [note, setNote] = useState<Note | null>(null);
   const [pendingInfo, setPendingInfo] = useState<{
@@ -46,15 +46,16 @@ export function ReadPage() {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
-  // The shared-link key from `?k=…`, validated. KeyEntryStep magic-types it
-  // into the input and calls onUnlock when finished, which routes through
-  // the same submit() as the manual flow.
+  // The shared-link key, validated. Prefer the short-route path segment
+  // (`/r/<key>`); fall back to the legacy `?k=…` query. KeyEntryStep
+  // magic-types it into the input and calls onUnlock when finished, which
+  // routes through the same submit() as the manual flow.
   const autoKey = useMemo(() => {
-    const k = searchParams.get("k");
-    if (!k) return null;
-    const trimmed = k.trim();
+    const raw = initialKey ?? searchParams.get("k");
+    if (!raw) return null;
+    const trimmed = raw.trim();
     return isReaderKeyShape(trimmed) ? trimmed : null;
-  }, [searchParams]);
+  }, [searchParams, initialKey]);
 
   useEffect(() => {
     if (status !== "approved" || !note) return;

@@ -15,7 +15,7 @@ export type NoteRecord = {
   cardIds: string[];
   sender: string;
   recipient: string;
-  email: string;
+  email?: string;
   storySource: StorySource;
   storyArcId: string | null;
   chapters: { title: string; body: string }[];
@@ -31,9 +31,6 @@ export type NoteRecord = {
 
 const notePath = (id: string) => `notes/${id}.json`;
 const keyPath = (k: string) => `keys/${k.toLowerCase()}.txt`;
-const emailPrefix = (email: string) => `emails/${email.trim().toLowerCase()}`;
-const emailIndexPath = (email: string, createdAt: number, id: string) =>
-  `${emailPrefix(email)}/${new Date(createdAt).toISOString()}-${id}.json`;
 
 const JSON_TYPE = { contentType: "application/json" } as const;
 const TEXT_TYPE = { contentType: "text/plain" } as const;
@@ -77,7 +74,6 @@ export async function createNote(input: {
   cardIds: string[];
   sender: string;
   recipient: string;
-  email: string;
   storySource: StorySource;
   storyArcId: string | null;
   chapters: { title: string; body: string }[];
@@ -101,7 +97,6 @@ export async function createNote(input: {
     cardIds: input.cardIds,
     sender: input.sender,
     recipient: input.recipient,
-    email: input.email.trim().toLowerCase(),
     storySource: input.storySource,
     storyArcId: input.storyArcId,
     chapters: input.chapters,
@@ -111,11 +106,6 @@ export async function createNote(input: {
   await Promise.all([
     storage.put(notePath(id), bufFromJson(note), JSON_TYPE),
     storage.put(keyPath(k), bufFromString(id), TEXT_TYPE),
-    storage.put(
-      emailIndexPath(note.email, now, id),
-      bufFromJson({ noteId: id }),
-      JSON_TYPE,
-    ),
   ]);
 
   return { id };
@@ -143,24 +133,6 @@ export async function getNoteByKey(k: string): Promise<NoteRecord | null> {
   const id = bufToString(idBuf);
   if (!id) return null;
   return getNoteById(id);
-}
-
-export async function listByEmail(email: string): Promise<NoteRecord[]> {
-  const storage = getStorage();
-  const entries = await storage.list(emailPrefix(email));
-  if (entries.length === 0) return [];
-
-  // Filenames are ISO-prefixed → already chronological. Reverse for newest-first.
-  const sorted = [...entries].sort((a, b) => (a.key < b.key ? 1 : -1));
-  const notes = await Promise.all(
-    sorted.map(async (entry) => {
-      const idxBuf = await storage.get(entry.key);
-      const idx = bufToJson<{ noteId: string }>(idxBuf);
-      if (!idx?.noteId) return null;
-      return getNoteById(idx.noteId);
-    }),
-  );
-  return notes.filter((n): n is NoteRecord => n !== null);
 }
 
 export async function listPending(limit = 100): Promise<NoteRecord[]> {
@@ -288,7 +260,6 @@ async function cascadeDelete(note: NoteRecord): Promise<void> {
   await Promise.all([
     storage.delete(notePath(note.id)),
     storage.delete(keyPath(note.key)),
-    storage.delete(emailIndexPath(note.email, note.createdAt, note.id)),
   ]);
 }
 
