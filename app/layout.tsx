@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Caveat, Kalam, Patrick_Hand } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Shell } from "./shell";
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <Shell>{children}</Shell>
+        <Analytics />
       </body>
     </html>
   );
